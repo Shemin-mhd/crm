@@ -1,0 +1,342 @@
+export type UserRole = 'Super Admin' | 'Admin' | 'Operations Manager' | 'Worker';
+
+export type TaskStatus = 'Pending' | 'In Progress' | 'Completed' | 'Overdue' | 'Upcoming';
+export type TaskPriority = 'Urgent' | 'High' | 'Medium' | 'Low';
+export type TaskType = 'Call' | 'Meeting' | 'Demo' | 'Email' | 'Follow-up' | 'Review' | 'Document';
+
+export type LeadStatus = 'New' | 'Pending' | 'Contacted' | 'Qualified' | 'Proposal Sent' | 'Negotiation' | 'Converted' | 'Lost';
+export type LeadRating = 'Hot' | 'Warm' | 'Cold';
+
+export type DealStage = 
+  | 'Opportunity' 
+  | 'Quotation' 
+  | 'Offer Sent' 
+  | 'On Review' 
+  | 'Allocated To Inhouse' 
+  | 'Order' 
+  | 'Proforma Invoice' 
+  | 'Invoice' 
+  | 'Receipt' 
+  | 'Delivery Note' 
+  | string;
+
+export interface CrmTask {
+  id: string;
+  slNo: number;
+  assignee: {
+    name: string;
+    avatar?: string;
+  };
+  taskDetails: string;
+  taskUnder: string;
+  taskType: TaskType;
+  dueTime: string;
+  dueDate: string;
+  priority: TaskPriority;
+  status: TaskStatus;
+  createdBy: string;
+}
+
+export interface CrmLead {
+  id: string;
+  slNo: number;
+  leadDate: string;
+  assignedDate?: string;
+  leadAssigned: {
+    name: string;
+    avatar?: string;
+  };
+  contactDetails: {
+    name: string;
+    phone: string;
+    email?: string;
+    company: string;
+    whatsapp?: string;
+    salutation?: string;
+    designation?: string;
+    personalMobile?: string;
+    nationality?: string;
+    telephone?: string;
+    website?: string;
+  };
+  leadSpecification: string;
+  createdBy: string;
+  createdByAvatar?: string;
+  owner: string;
+  ownerAvatar?: string;
+  rating: LeadRating;
+  status: LeadStatus;
+  lastActivity: string;
+  lastActivityDate?: string;
+  lastActivityTimeAgo?: string;
+  value: number;
+  source: string;
+  sourceName?: string;
+  campaign?: string;
+  businessOpportunity?: string;
+  location?: string;
+  tags?: string[];
+  comments?: string;
+  notes?: Array<{ id: string; author: string; avatar?: string; date: string; content: string }>;
+  files?: Array<{ id: string; name: string; size: string; uploadedBy: string; date: string }>;
+  salesVisits?: Array<{ id: string; visitor: string; date: string; location: string; summary: string }>;
+}
+
+export interface CrmCustomer {
+  id: string;
+  slNo: number;
+  customerName: string;
+  contactPerson: string;
+  phone: string;
+  email: string;
+  owner: string;
+  status: 'Active' | 'Inactive' | 'Prospect';
+  lastActivity: string;
+  companyGroup: string;
+  totalDeals: number;
+  totalSpend: number;
+}
+
+export interface CrmSalesOpportunity {
+  id: string;
+  slNo?: number;
+  opportunityCode?: string;
+  title: string;
+  subtitle?: string;
+  starred?: boolean;
+  customer: string;
+  contactPerson?: string;
+  phone?: string;
+  whatsapp?: string;
+  ownerBadge?: string;
+  amount: number;
+  stage: DealStage;
+  probability: number;
+  owner: string;
+  ownerAvatar?: string;
+  opportunityDate?: string;
+  opportunityDateDaysAgo?: string;
+  opportunityAssigned?: string;
+  expectedClose: string;
+  closeDateRemaining?: string;
+  lastActivity?: string;
+  lastActivityRelative?: string;
+  classification?: string;
+  rating?: string;
+  businessOpportunity?: string;
+  campaign?: string;
+  createdBy?: string;
+  tags?: string[];
+  createdAt: string;
+}
+
+export interface CrmPurchaseStock {
+  id: string;
+  slNo: number;
+  productName: string;
+  sku: string;
+  store: string;
+  supplier: string;
+  quantity: number;
+  unitPrice: number;
+  totalValue: number;
+  status: 'In Stock' | 'Low Stock' | 'Out of Stock';
+  reorderLevel: number;
+}
+
+export interface CrmCampaign {
+  id: string;
+  slNo?: number;
+  name: string;
+  owner?: {
+    name: string;
+    avatar?: string;
+  };
+  channel?: string;
+  type?: string;
+  budget?: number;
+  leadsGenerated?: number;
+  conversionRate?: string;
+  status: 'Active' | 'Inactive' | 'Completed' | 'Draft' | 'Paused';
+  startDate?: string;
+  endDate?: string;
+  listing?: boolean;
+}
+
+export interface CrmUser {
+  id: string;
+  name: string;
+  email: string;
+  role: UserRole;
+  phone: string;
+  department: string;
+  status: 'Active' | 'Inactive';
+  lastLogin: string;
+}
+
+export interface PermissionRule {
+  module: string;
+  view: boolean;
+  create: boolean;
+  edit: boolean;
+  delete: boolean;
+  assign: boolean;
+  approve: boolean;
+  export: boolean;
+}
+
+export interface CrmQuotation {
+  id: string;
+  slNo: number;
+  quotationNumber: string;
+  opportunityCode?: string;
+  customer: string;
+  contactPerson: string;
+  phone?: string;
+  subject: string;
+  quoteDate: string;
+  validUntil: string;
+  subtotal: number;
+  vatAmount: number;
+  totalAmount: number;
+  status: 'Draft' | 'Sent' | 'Approved' | 'Rejected' | 'Expired';
+  owner: string;
+  itemsCount: number;
+}
+
+export interface CrmSalesOrder {
+  id: string;
+  slNo: number;
+  orderNumber: string;
+  quotationRef?: string;
+  opportunityRef?: string;
+  subject?: string;
+  customer: string;
+  contactPerson?: string;
+  phone?: string;
+  email?: string;
+  poReference?: string;
+  orderDate: string;
+  deliveryDueDate?: string;
+  amount: number;
+  vatAmount: number;
+  totalAmount: number;
+  profit?: number;
+  receivable?: number;
+  status: string;
+  assignedTo?: string;
+  category?: string;
+}
+
+export interface CrmProformaInvoice {
+  id: string;
+  slNo: number;
+  piNumber: string;
+  quotationRef?: string;
+  opportunityTitle?: string;
+  customer: string;
+  issueDate: string;
+  paymentTerms?: string;
+  amount: number;
+  vatAmount: number;
+  totalAmount: number;
+  status: string;
+  preparedBy?: string;
+}
+
+export interface CrmInvoice {
+  id: string;
+  slNo: number;
+  invoiceNumber: string;
+  orderRef?: string;
+  opportunityOrderRef?: string;
+  customer: string;
+  contactPerson?: string;
+  phone?: string;
+  owner?: string;
+  ownerAvatar?: string;
+  trnNumber?: string;
+  issueDate: string;
+  dueDate?: string;
+  nextFollowup?: string;
+  amount: number;
+  subtotal?: number;
+  vatAmount?: number;
+  totalAmount?: number;
+  paidAmount: number;
+  balanceAmount: number;
+  status: 'Paid' | 'Unpaid' | 'Overdue' | 'Partially Paid' | 'Due' | string;
+}
+
+export interface CrmReceipt {
+  id: string;
+  slNo: number;
+  receiptNumber: string;
+  invoiceRef?: string;
+  customer: string;
+  contactPerson?: string;
+  phone?: string;
+  createdBy?: string;
+  createdByAvatar?: string;
+  receiptType?: string;
+  tags?: string[];
+  paymentMethod: 'Bank Transfer' | 'Cheque' | 'Credit Card' | 'Cash' | string;
+  receiptDate: string;
+  amount: number;
+  referenceNumber?: string;
+  status: 'Cleared' | 'Pending Clearance' | 'Bounced' | 'Cancelled' | string;
+}
+
+export interface CrmDeliveryNote {
+  id: string;
+  slNo: number;
+  deliveryNoteNumber: string;
+  owner?: string;
+  ownerAvatar?: string;
+  orderRef?: string;
+  orderDescription?: string;
+  customer: string;
+  invoiceRef?: string;
+  dnType?: string;
+  location?: string;
+  receivedBy?: string;
+  receivedPhone?: string;
+  costUpdated?: boolean;
+  siteLocation?: string;
+  driverName?: string;
+  vehicleNumber?: string;
+  dispatchDate: string;
+  itemsCount?: number;
+  status: 'Scheduled' | 'Out for Delivery' | 'Delivered' | 'Returned' | string;
+}
+
+export interface CrmCezconStock {
+  id: string;
+  slNo: number;
+  serialNo?: string;
+  code: string;
+  name: string;
+  image?: string;
+  unit: string;
+  brand: string;
+  category: string;
+  type: string;
+  purchaseRate: number;
+  sellingPrice: number;
+  minStock?: string;
+  stock: number;
+  store?: string;
+  status?: string;
+}
+
+export interface CrmStockTransfer {
+  id: string;
+  slNo: number;
+  transferNo: string;
+  date: string;
+  owner: string;
+  ownerAvatar?: string;
+  transferFrom: string;
+  transferTo: string;
+}
+
