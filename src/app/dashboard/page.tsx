@@ -32,12 +32,24 @@ import { Button } from '@/components/ui/Button';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { DealStage } from '@/types/enterprise-crm';
+import { useRouter } from 'next/navigation';
+import { authMockService } from '@/services/authMockService';
 
 export default function DashboardPage() {
+  const router = useRouter();
   const { users, customers, leads, tasks, salesOpportunities } = useEnterpriseCrm();
 
   const [dateFilter, setDateFilter] = useState('month');
   const [repFilter, setRepFilter] = useState('all');
+
+  React.useEffect(() => {
+    const user = authMockService.getCurrentUser();
+    if (user?.role === 'manager') {
+      router.replace('/manager/dashboard');
+    } else if (user?.role === 'employee' || user?.role === 'worker') {
+      router.replace('/worker/dashboard');
+    }
+  }, [router]);
 
   // Business calculations
   const totalPipeline = salesOpportunities.reduce((acc, o) => acc + o.amount, 0);

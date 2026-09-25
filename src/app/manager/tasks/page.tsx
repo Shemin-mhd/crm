@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import {
   CheckSquare,
@@ -17,7 +17,7 @@ import { ManagerShell } from '@/components/layout/ManagerShell';
 import { managerMockService } from '@/services/managerMockService';
 import { ManagerTask } from '@/types/manager';
 
-export default function ManagerTasksPage() {
+function ManagerTasksContent() {
   const searchParams = useSearchParams();
   const statusParam = searchParams.get('status') || 'All';
   const [tasks, setTasks] = useState<ManagerTask[]>([]);
@@ -234,5 +234,13 @@ export default function ManagerTasksPage() {
         </div>
       )}
     </ManagerShell>
+  );
+}
+
+export default function ManagerTasksPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-xs text-slate-400">Loading Tasks...</div>}>
+      <ManagerTasksContent />
+    </Suspense>
   );
 }

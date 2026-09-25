@@ -1,4 +1,4 @@
-export type UserRole = 'Super Admin' | 'Admin' | 'Operations Manager' | 'Worker';
+export type UserRole = 'Super Admin' | 'Admin' | 'Manager' | 'Employee' | 'Operations Manager' | 'Worker';
 
 export type TaskStatus = 'Pending' | 'In Progress' | 'Completed' | 'Overdue' | 'Upcoming';
 export type TaskPriority = 'Urgent' | 'High' | 'Medium' | 'Low';

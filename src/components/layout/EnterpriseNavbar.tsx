@@ -17,9 +17,18 @@ import {
   ChevronDown,
   Menu,
   X,
+  Target,
+  UserCheck,
+  Calendar,
+  Briefcase,
+  Bell,
+  DollarSign,
+  Users,
+  BarChart3,
 } from 'lucide-react';
-import { ENTERPRISE_NAV_ITEMS, EnterpriseNavItem } from '@/config/enterprise-navigation';
+import { ENTERPRISE_NAV_ITEMS, MANAGER_NAV_ITEMS, EnterpriseNavItem } from '@/config/enterprise-navigation';
 import { NavDropdown } from '@/components/layout/NavDropdown';
+import { authMockService } from '@/services/authMockService';
 import { cn } from '@/lib/utils';
 
 const HEADER_ICONS: Record<string, (isActive: boolean) => React.ReactNode> = {
@@ -33,36 +42,67 @@ const HEADER_ICONS: Record<string, (isActive: boolean) => React.ReactNode> = {
   Package: (active) => <Package className={cn('w-3.5 h-3.5 flex-shrink-0', active ? 'text-white' : 'text-[#2563EB]')} />,
   FileText: (active) => <FileText className={cn('w-3.5 h-3.5 flex-shrink-0', active ? 'text-white' : 'text-[#2563EB]')} />,
   Wrench: (active) => <Wrench className={cn('w-3.5 h-3.5 flex-shrink-0', active ? 'text-white' : 'text-[#2563EB]')} />,
+  Target: (active) => <Target className={cn('w-3.5 h-3.5 flex-shrink-0', active ? 'text-white' : 'text-[#2563EB]')} />,
+  UserCheck: (active) => <UserCheck className={cn('w-3.5 h-3.5 flex-shrink-0', active ? 'text-white' : 'text-[#2563EB]')} />,
+  Calendar: (active) => <Calendar className={cn('w-3.5 h-3.5 flex-shrink-0', active ? 'text-white' : 'text-[#2563EB]')} />,
+  Briefcase: (active) => <Briefcase className={cn('w-3.5 h-3.5 flex-shrink-0', active ? 'text-white' : 'text-[#2563EB]')} />,
+  Bell: (active) => <Bell className={cn('w-3.5 h-3.5 flex-shrink-0', active ? 'text-white' : 'text-[#2563EB]')} />,
+  DollarSign: (active) => <DollarSign className={cn('w-3.5 h-3.5 flex-shrink-0', active ? 'text-white' : 'text-[#2563EB]')} />,
+  Users: (active) => <Users className={cn('w-3.5 h-3.5 flex-shrink-0', active ? 'text-white' : 'text-[#2563EB]')} />,
+  BarChart3: (active) => <BarChart3 className={cn('w-3.5 h-3.5 flex-shrink-0', active ? 'text-white' : 'text-[#2563EB]')} />,
 };
 
 const WORKER_NAV_ITEMS: EnterpriseNavItem[] = [
   {
-    id: 'worker-dashboard',
+    id: 'employee-dashboard',
     label: 'Dashboard',
     path: '/worker/dashboard',
     iconName: 'Home',
   },
   {
-    id: 'worker-tasks',
+    id: 'employee-tasks',
     label: 'My Tasks',
     path: '/worker/tasks',
-    iconName: 'Wrench',
+    iconName: 'CheckSquare',
     children: [
       { label: "Today's Schedule", href: '/worker/tasks', iconName: 'CheckSquare' },
-      { label: 'Active Job (Live)', href: '/worker/tasks/active', iconName: 'Hourglass' },
+      { label: 'Live Job Pad', href: '/worker/tasks/active', iconName: 'Hourglass' },
       { label: 'Pending Acceptance', href: '/worker/tasks?status=Pending', iconName: 'Hourglass' },
       { label: 'Completed History', href: '/worker/tasks?status=Completed', iconName: 'FileText' },
     ],
   },
   {
-    id: 'worker-active',
-    label: 'Live Job Pad',
-    path: '/worker/tasks/active',
-    iconName: 'Hourglass',
-    badge: 'LIVE',
+    id: 'employee-leads',
+    label: 'My Leads',
+    path: '/worker/leads',
+    iconName: 'Target',
   },
   {
-    id: 'worker-materials',
+    id: 'employee-customers',
+    label: 'My Customers',
+    path: '/worker/customers',
+    iconName: 'UserCheck',
+  },
+  {
+    id: 'employee-activities',
+    label: 'My Activities',
+    path: '/worker/activities',
+    iconName: 'ListChecks',
+  },
+  {
+    id: 'employee-deals',
+    label: 'My Deals',
+    path: '/worker/deals',
+    iconName: 'Briefcase',
+  },
+  {
+    id: 'employee-calendar',
+    label: 'Calendar',
+    path: '/worker/calendar',
+    iconName: 'Calendar',
+  },
+  {
+    id: 'employee-materials',
     label: 'Materials',
     path: '/worker/materials',
     iconName: 'Package',
@@ -72,20 +112,20 @@ const WORKER_NAV_ITEMS: EnterpriseNavItem[] = [
     ],
   },
   {
-    id: 'worker-timesheet',
+    id: 'employee-timesheet',
     label: 'Timesheet',
     path: '/worker/timesheet',
-    iconName: 'CheckSquare',
+    iconName: 'Hourglass',
   },
   {
-    id: 'worker-reports',
-    label: 'Service Reports',
+    id: 'employee-reports',
+    label: 'Reports',
     path: '/worker/reports',
     iconName: 'FileText',
   },
   {
-    id: 'worker-profile',
-    label: 'Profile & Van',
+    id: 'employee-profile',
+    label: 'Profile',
     path: '/worker/profile',
     iconName: 'Shield',
   },
@@ -95,10 +135,24 @@ export function EnterpriseNavbar() {
   const pathname = usePathname();
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [userRole, setUserRole] = useState<string>('');
   const navContainerRef = useRef<HTMLDivElement>(null);
 
+  useEffect(() => {
+    const user = authMockService.getCurrentUser();
+    if (user?.role) {
+      setUserRole(user.role.toLowerCase());
+    }
+  }, []);
+
   const isWorkerPath = pathname.startsWith('/worker');
-  const activeNavItems = isWorkerPath ? WORKER_NAV_ITEMS : ENTERPRISE_NAV_ITEMS;
+  const isManagerPath = pathname.startsWith('/manager');
+
+  const activeNavItems = isWorkerPath || userRole === 'employee' || userRole === 'worker'
+    ? WORKER_NAV_ITEMS
+    : isManagerPath || userRole === 'manager'
+      ? MANAGER_NAV_ITEMS
+      : ENTERPRISE_NAV_ITEMS;
 
   // Close dropdown when clicking outside
   useEffect(() => {

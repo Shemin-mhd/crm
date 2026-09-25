@@ -593,14 +593,14 @@ function SettingsContent() {
     const updated = cezconUsersList.map((usr) =>
       usr.id === assignWorkerUser.id
         ? {
-            ...usr,
-            profileType: 'Worker',
-            isWorker: true,
-            workerCode: assignWorkerTab === 'NEW' ? (workerFormData.workerCode || `WRK-${String(usr.id).slice(-4)}`) : (workerFormData.existingWorker || usr.workerCode),
-            grade: assignWorkerTab === 'NEW' ? workerFormData.grade : usr.grade,
-            hourlyRate: assignWorkerTab === 'NEW' ? workerFormData.hourlyRate : usr.hourlyRate,
-            joiningDate: assignWorkerTab === 'NEW' ? workerFormData.joiningDate : usr.joiningDate,
-          }
+          ...usr,
+          profileType: 'Worker',
+          isWorker: true,
+          workerCode: assignWorkerTab === 'NEW' ? (workerFormData.workerCode || `WRK-${String(usr.id).slice(-4)}`) : (workerFormData.existingWorker || usr.workerCode),
+          grade: assignWorkerTab === 'NEW' ? workerFormData.grade : usr.grade,
+          hourlyRate: assignWorkerTab === 'NEW' ? workerFormData.hourlyRate : usr.hourlyRate,
+          joiningDate: assignWorkerTab === 'NEW' ? workerFormData.joiningDate : usr.joiningDate,
+        }
         : usr
     );
 
@@ -1787,11 +1787,10 @@ function SettingsContent() {
                                         setUserFormData({ ...userFormData, profile: p.name });
                                         setIsProfileDropdownOpen(false);
                                       }}
-                                      className={`px-3 py-1.5 cursor-pointer transition-colors ${
-                                        isSelected
+                                      className={`px-3 py-1.5 cursor-pointer transition-colors ${isSelected
                                           ? 'bg-blue-600 text-white font-medium'
                                           : 'hover:bg-blue-600 hover:text-white text-slate-800'
-                                      }`}
+                                        }`}
                                     >
                                       {p.name}
                                     </div>
@@ -2908,8 +2907,8 @@ function SettingsContent() {
                     type="button"
                     onClick={() => setStageCurrentPage(pageNum)}
                     className={`px-2.5 py-1 rounded font-bold transition-colors ${stageCurrentPage === pageNum
-                        ? 'bg-blue-600 text-white shadow-xs'
-                        : 'border border-slate-200 bg-white hover:bg-slate-50 text-slate-700'
+                      ? 'bg-blue-600 text-white shadow-xs'
+                      : 'border border-slate-200 bg-white hover:bg-slate-50 text-slate-700'
                       }`}
                   >
                     {pageNum}
@@ -3065,8 +3064,8 @@ function SettingsContent() {
                   type="button"
                   onClick={() => setLostReasonCurrentPage(pageNum)}
                   className={`px-2.5 py-1 rounded font-bold transition-colors ${lostReasonCurrentPage === pageNum
-                      ? 'bg-blue-600 text-white shadow-xs'
-                      : 'border border-slate-200 bg-white hover:bg-slate-50 text-slate-700'
+                    ? 'bg-blue-600 text-white shadow-xs'
+                    : 'border border-slate-200 bg-white hover:bg-slate-50 text-slate-700'
                     }`}
                 >
                   {pageNum}
@@ -3111,8 +3110,8 @@ function SettingsContent() {
                   type="button"
                   onClick={() => setActiveSubTab(sub.id)}
                   className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded font-bold text-xs whitespace-nowrap transition-colors ${isActive
-                      ? 'bg-blue-600 text-white shadow-xs'
-                      : 'text-slate-600 hover:text-blue-600 hover:bg-white'
+                    ? 'bg-blue-600 text-white shadow-xs'
+                    : 'text-slate-600 hover:text-blue-600 hover:bg-white'
                     }`}
                 >
                   <Icon className="w-3.5 h-3.5" />
@@ -3236,8 +3235,8 @@ function SettingsContent() {
                       type="button"
                       onClick={() => setSourceCurrentPage(pageNum)}
                       className={`px-2.5 py-1 rounded font-bold transition-colors ${sourceCurrentPage === pageNum
-                          ? 'bg-blue-600 text-white shadow-xs'
-                          : 'border border-slate-200 bg-white hover:bg-slate-50 text-slate-700'
+                        ? 'bg-blue-600 text-white shadow-xs'
+                        : 'border border-slate-200 bg-white hover:bg-slate-50 text-slate-700'
                         }`}
                     >
                       {pageNum}
@@ -3357,8 +3356,8 @@ function SettingsContent() {
                       type="button"
                       onClick={() => setActiveCustomModule(mod.id)}
                       className={`inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold transition-all border-b-2 ${isActive
-                          ? 'border-b-blue-600 text-blue-600 bg-blue-50/50 rounded-t'
-                          : 'border-b-transparent text-slate-600 hover:text-blue-600 hover:bg-slate-50'
+                        ? 'border-b-blue-600 text-blue-600 bg-blue-50/50 rounded-t'
+                        : 'border-b-transparent text-slate-600 hover:text-blue-600 hover:bg-slate-50'
                         }`}
                     >
                       <Icon className="w-3.5 h-3.5" />
@@ -3462,8 +3461,8 @@ function SettingsContent() {
                   type="button"
                   onClick={() => setPrintSubTab('print')}
                   className={`inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold transition-all border-b-2 ${printSubTab === 'print'
-                      ? 'border-b-blue-600 text-blue-600 bg-blue-50/50 rounded-t'
-                      : 'border-b-transparent text-slate-600 hover:text-blue-600 hover:bg-slate-50'
+                    ? 'border-b-blue-600 text-blue-600 bg-blue-50/50 rounded-t'
+                    : 'border-b-transparent text-slate-600 hover:text-blue-600 hover:bg-slate-50'
                     }`}
                 >
                   <Printer className="w-3.5 h-3.5" />
@@ -3473,8 +3472,8 @@ function SettingsContent() {
                   type="button"
                   onClick={() => setPrintSubTab('terms')}
                   className={`inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold transition-all border-b-2 ${printSubTab === 'terms'
-                      ? 'border-b-blue-600 text-blue-600 bg-blue-50/50 rounded-t'
-                      : 'border-b-transparent text-slate-600 hover:text-blue-600 hover:bg-slate-50'
+                    ? 'border-b-blue-600 text-blue-600 bg-blue-50/50 rounded-t'
+                    : 'border-b-transparent text-slate-600 hover:text-blue-600 hover:bg-slate-50'
                     }`}
                 >
                   <FileText className="w-3.5 h-3.5" />
@@ -3649,8 +3648,8 @@ function SettingsContent() {
                         type="button"
                         onClick={() => setBankSubTab('aed')}
                         className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold border-b-2 ${bankSubTab === 'aed'
-                            ? 'border-b-blue-600 text-blue-600 bg-white rounded-t'
-                            : 'border-b-transparent text-slate-600 hover:text-blue-600'
+                          ? 'border-b-blue-600 text-blue-600 bg-white rounded-t'
+                          : 'border-b-transparent text-slate-600 hover:text-blue-600'
                           }`}
                       >
                         <Building className="w-3.5 h-3.5" />
@@ -3660,8 +3659,8 @@ function SettingsContent() {
                         type="button"
                         onClick={() => setBankSubTab('usd')}
                         className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold border-b-2 ${bankSubTab === 'usd'
-                            ? 'border-b-blue-600 text-blue-600 bg-white rounded-t'
-                            : 'border-b-transparent text-slate-600 hover:text-blue-600'
+                          ? 'border-b-blue-600 text-blue-600 bg-white rounded-t'
+                          : 'border-b-transparent text-slate-600 hover:text-blue-600'
                           }`}
                       >
                         <DollarSign className="w-3.5 h-3.5" />
@@ -4149,8 +4148,8 @@ function SettingsContent() {
                   type="button"
                   onClick={() => setPoSubTab('stage')}
                   className={`inline-flex items-center gap-1.5 px-4 py-2 border-b-2 font-bold text-xs transition-colors ${poSubTab === 'stage'
-                      ? 'border-b-blue-600 text-blue-600 bg-slate-50/70 rounded-t'
-                      : 'border-b-transparent text-slate-600 hover:text-blue-600 hover:bg-slate-50'
+                    ? 'border-b-blue-600 text-blue-600 bg-slate-50/70 rounded-t'
+                    : 'border-b-transparent text-slate-600 hover:text-blue-600 hover:bg-slate-50'
                     }`}
                 >
                   <Check className="w-3.5 h-3.5 text-slate-700" />
@@ -4160,8 +4159,8 @@ function SettingsContent() {
                   type="button"
                   onClick={() => setPoSubTab('approver')}
                   className={`inline-flex items-center gap-1.5 px-4 py-2 border-b-2 font-bold text-xs transition-colors ${poSubTab === 'approver'
-                      ? 'border-b-blue-600 text-blue-600 bg-slate-50/70 rounded-t'
-                      : 'border-b-transparent text-slate-600 hover:text-blue-600 hover:bg-slate-50'
+                    ? 'border-b-blue-600 text-blue-600 bg-slate-50/70 rounded-t'
+                    : 'border-b-transparent text-slate-600 hover:text-blue-600 hover:bg-slate-50'
                     }`}
                 >
                   <Clock className="w-3.5 h-3.5 text-slate-400" />
@@ -4616,8 +4615,8 @@ function SettingsContent() {
                   type="button"
                   onClick={() => setActiveSubTab(sub.id)}
                   className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded font-bold text-xs whitespace-nowrap transition-colors ${isActive
-                      ? 'bg-blue-600 text-white shadow-xs'
-                      : 'text-slate-600 hover:text-blue-600 hover:bg-white'
+                    ? 'bg-blue-600 text-white shadow-xs'
+                    : 'text-slate-600 hover:text-blue-600 hover:bg-white'
                     }`}
                 >
                   <Icon className="w-3.5 h-3.5" />
@@ -4741,8 +4740,8 @@ function SettingsContent() {
                       type="button"
                       onClick={() => setExpenseCurrentPage(pageNum)}
                       className={`px-2.5 py-1 rounded font-bold transition-colors ${expenseCurrentPage === pageNum
-                          ? 'bg-blue-600 text-white shadow-xs'
-                          : 'border border-slate-200 bg-white hover:bg-slate-50 text-slate-700'
+                        ? 'bg-blue-600 text-white shadow-xs'
+                        : 'border border-slate-200 bg-white hover:bg-slate-50 text-slate-700'
                         }`}
                     >
                       {pageNum}
@@ -4870,8 +4869,8 @@ function SettingsContent() {
                       type="button"
                       onClick={() => setCampaignTypeCurrentPage(pageNum)}
                       className={`px-2.5 py-1 rounded font-bold transition-colors ${campaignTypeCurrentPage === pageNum
-                          ? 'bg-blue-600 text-white shadow-xs'
-                          : 'border border-slate-200 bg-white hover:bg-slate-50 text-slate-700'
+                        ? 'bg-blue-600 text-white shadow-xs'
+                        : 'border border-slate-200 bg-white hover:bg-slate-50 text-slate-700'
                         }`}
                     >
                       {pageNum}
@@ -5004,8 +5003,8 @@ function SettingsContent() {
                       type="button"
                       onClick={() => setCampaignStatusCurrentPage(pageNum)}
                       className={`px-2.5 py-1 rounded font-bold transition-colors ${campaignStatusCurrentPage === pageNum
-                          ? 'bg-blue-600 text-white shadow-xs'
-                          : 'border border-slate-200 bg-white hover:bg-slate-50 text-slate-700'
+                        ? 'bg-blue-600 text-white shadow-xs'
+                        : 'border border-slate-200 bg-white hover:bg-slate-50 text-slate-700'
                         }`}
                     >
                       {pageNum}
@@ -5297,8 +5296,8 @@ function SettingsContent() {
                   type="button"
                   onClick={() => setTagCurrentPage(pageNum)}
                   className={`px-2.5 py-1 rounded font-bold transition-colors ${tagCurrentPage === pageNum
-                      ? 'bg-blue-600 text-white shadow-xs'
-                      : 'border border-slate-200 bg-white hover:bg-slate-50 text-slate-700'
+                    ? 'bg-blue-600 text-white shadow-xs'
+                    : 'border border-slate-200 bg-white hover:bg-slate-50 text-slate-700'
                     }`}
                 >
                   {pageNum}
@@ -6048,22 +6047,20 @@ function SettingsContent() {
                     <button
                       type="button"
                       onClick={() => setAssignWorkerTab('NEW')}
-                      className={`px-4 py-1 text-xs font-bold tracking-wider uppercase transition-colors cursor-pointer ${
-                        assignWorkerTab === 'NEW'
+                      className={`px-4 py-1 text-xs font-bold tracking-wider uppercase transition-colors cursor-pointer ${assignWorkerTab === 'NEW'
                           ? 'bg-[#16A34A] text-white'
                           : 'bg-white text-slate-700 hover:bg-slate-50'
-                      }`}
+                        }`}
                     >
                       NEW
                     </button>
                     <button
                       type="button"
                       onClick={() => setAssignWorkerTab('EXISTING')}
-                      className={`px-4 py-1 text-xs font-bold tracking-wider uppercase transition-colors cursor-pointer ${
-                        assignWorkerTab === 'EXISTING'
+                      className={`px-4 py-1 text-xs font-bold tracking-wider uppercase transition-colors cursor-pointer ${assignWorkerTab === 'EXISTING'
                           ? 'bg-[#16A34A] text-white'
                           : 'bg-white text-slate-700 hover:bg-slate-50'
-                      }`}
+                        }`}
                     >
                       EXISTING
                     </button>

@@ -1122,7 +1122,7 @@ export const mockUsers: CrmUser[] = [
     id: 'usr-4',
     name: 'Jordan Hayes',
     email: 'jordan.h@cooltechnologies.com',
-    role: 'Worker',
+    role: 'Employee',
     phone: '+1 (555) 901-2345',
     department: 'Field Execution & Support',
     status: 'Active',

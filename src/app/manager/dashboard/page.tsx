@@ -5,449 +5,1044 @@ import Link from 'next/link';
 import {
   Users,
   CheckSquare,
-  TrendingUp,
-  AlertTriangle,
   Clock,
   MapPin,
   Calendar,
-  DollarSign,
   Plus,
   ArrowRight,
-  Filter,
   CheckCircle2,
-  Phone,
   Briefcase,
-  Layers,
   ChevronRight,
+  BarChart2,
+  FileText,
+  Image as ImageIcon,
+  Package,
+  Building2,
+  Zap,
+  UserCheck,
+  Check,
+  X,
+  ShieldCheck,
 } from 'lucide-react';
-import { ManagerShell } from '@/components/layout/ManagerShell';
-import { managerMockService } from '@/services/managerMockService';
-import {
-  TechnicianWorkload,
-  ManagerTask,
-  OpportunityItem,
-  ActivityItem,
-  PerformanceMetric,
-} from '@/types/manager';
 
 export default function ManagerDashboardPage() {
-  const [technicians, setTechnicians] = useState<TechnicianWorkload[]>([]);
-  const [tasks, setTasks] = useState<ManagerTask[]>([]);
-  const [opportunities, setOpportunities] = useState<OpportunityItem[]>([]);
-  const [activities, setActivities] = useState<ActivityItem[]>([]);
-  const [metrics, setMetrics] = useState<PerformanceMetric[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  // Quick Assign Task Modal State
+  const [mounted, setMounted] = useState(false);
+  const [selectedPeriod, setSelectedPeriod] = useState('This Month');
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
+
+  // Quick Assign Task Form State
   const [newTaskForm, setNewTaskForm] = useState({
     title: '',
     customerName: '',
     assignedTo: 'Tariq Mansour',
     priority: 'High' as 'High' | 'Medium' | 'Low' | 'Urgent',
-    category: 'HVAC Repair' as any,
-    dueDate: '26-09-2026',
-    slaDeadline: '4 Hours',
-    location: 'Abu Dhabi Commercial Center',
+    scheduledTime: '09:00 AM - 12:00 PM',
+    location: 'Downtown, Dubai',
   });
 
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
   useEffect(() => {
-    async function loadData() {
-      try {
-        const [techs, tsk, opps, acts, mets] = await Promise.all([
-          managerMockService.getTechnicians(),
-          managerMockService.getTasks(),
-          managerMockService.getOpportunities(),
-          managerMockService.getActivities(),
-          managerMockService.getPerformanceMetrics(),
-        ]);
-        setTechnicians(techs);
-        setTasks(tsk);
-        setOpportunities(opps);
-        setActivities(acts);
-        setMetrics(mets);
-      } finally {
-        setLoading(false);
-      }
-    }
-    loadData();
+    setMounted(true);
   }, []);
 
-  const handleCreateTask = async (e: React.FormEvent) => {
+  const handleCreateTask = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTaskForm.title || !newTaskForm.customerName) return;
-    const created = await managerMockService.assignTask({
-      ...newTaskForm,
-      status: 'Pending',
-    });
-    setTasks((prev) => [created, ...prev]);
+
+    setToastMessage(`Task "${newTaskForm.title}" successfully assigned to ${newTaskForm.assignedTo}!`);
+    setTimeout(() => setToastMessage(null), 4000);
+
     setIsAssignModalOpen(false);
     setNewTaskForm({
       title: '',
       customerName: '',
       assignedTo: 'Tariq Mansour',
       priority: 'High',
-      category: 'HVAC Repair',
-      dueDate: '26-09-2026',
-      slaDeadline: '4 Hours',
-      location: 'Abu Dhabi Commercial Center',
+      scheduledTime: '09:00 AM - 12:00 PM',
+      location: 'Downtown, Dubai',
     });
   };
 
+  if (!mounted) {
+    return (
+      <div className="w-full min-h-[600px] flex items-center justify-center text-slate-400 text-xs">
+        Loading Operations Manager Dashboard...
+      </div>
+    );
+  }
+
   return (
-    <ManagerShell
-      title="Operations Command Center"
-      subtitle="Real-time field technician capacity, task SLA tracking, and pipeline overview"
-    >
-      {/* ── Top Executive KPI Metrics ────────────────────────────────────── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {metrics.map((metric, idx) => (
-          <div
-            key={idx}
-            className="bg-white rounded-xl border border-slate-200 p-4 shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between"
-          >
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{metric.title}</span>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                {metric.growth}
-              </span>
-            </div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-extrabold text-slate-900">{metric.value}</span>
-              <span className="text-xs text-slate-400">/ target {metric.target}</span>
-            </div>
-            <div className="mt-2 flex items-center gap-1.5 text-[11px] text-slate-400">
-              <Clock className="w-3.5 h-3.5 text-slate-400" />
-              <span>{metric.period}</span>
-            </div>
+    <div className="w-full space-y-4 sm:space-y-5 animate-in fade-in duration-200 pb-12 overflow-x-hidden">
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="fixed bottom-6 right-6 z-50 bg-[#002B49] text-white px-4 py-3 rounded-xl shadow-2xl flex items-center gap-2.5 text-xs font-bold animate-in slide-in-from-bottom-5 duration-200">
+          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+          <span>{toastMessage}</span>
+        </div>
+      )}
+
+      {/* ── 1. HEADER & TOP CONTROLS ── */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3.5 pb-1">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+            Operations Manager Dashboard
+          </h1>
+          <p className="text-xs text-slate-500 mt-0.5 font-medium">
+            Monitor team performance, field operations, tasks and business pipeline in real-time.
+          </p>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2.5 self-start md:self-auto">
+          {/* Date Indicator */}
+          <div className="flex items-center gap-2 bg-white border border-[#E2E8F0] rounded-xl px-3.5 py-2 text-xs font-bold text-slate-800 shadow-2xs">
+            <Calendar className="w-3.5 h-3.5 text-[#1677FF]" />
+            <span>Wednesday, 24 Sep 2026</span>
           </div>
-        ))}
+
+          {/* Period Dropdown */}
+          <select
+            value={selectedPeriod}
+            onChange={(e) => setSelectedPeriod(e.target.value)}
+            className="bg-white border border-[#E2E8F0] rounded-xl px-3.5 py-2 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 shadow-2xs cursor-pointer"
+          >
+            <option value="Today">Today</option>
+            <option value="This Week">This Week</option>
+            <option value="This Month">This Month</option>
+            <option value="This Quarter">This Quarter</option>
+          </select>
+
+          {/* Primary Action: Assign Task */}
+          <button
+            type="button"
+            onClick={() => setIsAssignModalOpen(true)}
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#1677FF] hover:bg-blue-600 text-white font-bold text-xs shadow-xs transition-colors cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            <span>+ Assign Task</span>
+          </button>
+        </div>
       </div>
 
-      {/* ── Main Operations Grid ─────────────────────────────────────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left 2 Cols: Live Technician Workload & Task SLA Dispatch */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Technician Live Workload & Capacity */}
-          <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
-            <div className="px-5 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50/50">
+      {/* ── 2. TOP 4 METRIC CARDS WITH SPARKLINE WAVES ── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4">
+        {/* Metric 1: Total Technicians */}
+        <div className="bg-white border border-[#E2E8F0] rounded-2xl p-4 sm:p-5 shadow-xs flex items-center justify-between gap-2">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <div className="w-9 h-9 rounded-xl bg-[#E8F1FD] text-[#1677FF] flex items-center justify-center">
+                <Users className="w-4 h-4" />
+              </div>
+              <span className="text-xs font-bold text-slate-600">Total Technicians</span>
+            </div>
+            <div className="flex items-baseline gap-2 pt-1">
+              <span className="text-2xl font-black text-slate-900">12</span>
+              <span className="text-[11px] font-bold text-[#059669] bg-[#ECFDF5] px-1.5 py-0.5 rounded">
+                ↑ +2.5%
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-400 font-medium">2 on leave • 10 active</p>
+          </div>
+          {/* Sparkline Wave */}
+          <svg className="w-20 h-10 text-[#1677FF]" viewBox="0 0 100 40" fill="none">
+            <path
+              d="M0 30 Q 25 10, 50 25 T 100 8"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+            />
+          </svg>
+        </div>
+
+        {/* Metric 2: Tasks Completed */}
+        <div className="bg-white border border-[#E2E8F0] rounded-2xl p-4 sm:p-5 shadow-xs flex items-center justify-between gap-2">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <div className="w-9 h-9 rounded-xl bg-[#ECFDF5] text-[#059669] flex items-center justify-center">
+                <CheckSquare className="w-4 h-4" />
+              </div>
+              <span className="text-xs font-bold text-slate-600">Tasks Completed</span>
+            </div>
+            <div className="flex items-baseline gap-2 pt-1">
+              <span className="text-2xl font-black text-slate-900">48</span>
+              <span className="text-[11px] font-bold text-[#059669] bg-[#ECFDF5] px-1.5 py-0.5 rounded">
+                ↑ +12.5%
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-400 font-medium">of 60 assigned</p>
+          </div>
+          {/* Sparkline Wave */}
+          <svg className="w-20 h-10 text-[#059669]" viewBox="0 0 100 40" fill="none">
+            <path
+              d="M0 32 Q 25 30, 50 18 T 100 6"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+            />
+          </svg>
+        </div>
+
+        {/* Metric 3: Avg. Task Time */}
+        <div className="bg-white border border-[#E2E8F0] rounded-2xl p-4 sm:p-5 shadow-xs flex items-center justify-between gap-2">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <div className="w-9 h-9 rounded-xl bg-[#FFFBEB] text-[#D97706] flex items-center justify-center">
+                <Clock className="w-4 h-4" />
+              </div>
+              <span className="text-xs font-bold text-slate-600">Avg. Task Time</span>
+            </div>
+            <div className="flex items-baseline gap-2 pt-1">
+              <span className="text-2xl font-black text-slate-900">3.4 hrs</span>
+              <span className="text-[11px] font-bold text-[#059669] bg-[#ECFDF5] px-1.5 py-0.5 rounded">
+                ↓ -18%
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-400 font-medium">Target: 4.0 hrs</p>
+          </div>
+          {/* Sparkline Wave */}
+          <svg className="w-20 h-10 text-[#D97706]" viewBox="0 0 100 40" fill="none">
+            <path
+              d="M0 15 Q 25 30, 50 12 T 100 24"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+            />
+          </svg>
+        </div>
+
+        {/* Metric 4: Revenue in Pipeline */}
+        <div className="bg-white border border-[#E2E8F0] rounded-2xl p-4 sm:p-5 shadow-xs flex items-center justify-between gap-2">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <div className="w-9 h-9 rounded-xl bg-[#F5F3FF] text-[#7C3AED] flex items-center justify-center">
+                <BarChart2 className="w-4 h-4" />
+              </div>
+              <span className="text-xs font-bold text-slate-600">Revenue in Pipeline</span>
+            </div>
+            <div className="flex items-baseline gap-2 pt-1">
+              <span className="text-2xl font-black text-slate-900">AED 950K</span>
+              <span className="text-[11px] font-bold text-[#059669] bg-[#ECFDF5] px-1.5 py-0.5 rounded">
+                ↑ +18.7%
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-400 font-medium">12 deals • Q3 2026</p>
+          </div>
+          {/* Sparkline Wave */}
+          <svg className="w-20 h-10 text-[#7C3AED]" viewBox="0 0 100 40" fill="none">
+            <path
+              d="M0 28 Q 25 24, 50 16 T 100 8"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+            />
+          </svg>
+        </div>
+      </div>
+
+      {/* ── 3. MIDDLE SECTION (3 COLUMNS) ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5">
+        {/* Column 1 (5 cols on desktop): Team & Field Status */}
+        <div className="lg:col-span-5 bg-white border border-[#E2E8F0] rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between pb-3.5 border-b border-[#F1F5F9]">
               <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-lg bg-blue-100/70 text-blue-700">
+                <div className="w-8 h-8 rounded-lg bg-[#E8F1FD] text-[#1677FF] flex items-center justify-center">
                   <Users className="w-4 h-4" />
                 </div>
                 <div>
-                  <h2 className="text-sm font-bold text-slate-900">Technician Workload & Field Status</h2>
-                  <p className="text-[11px] text-slate-500">Live capacity and active task distribution</p>
+                  <h3 className="text-sm font-bold text-slate-900">Team &amp; Field Status</h3>
+                  <p className="text-[11px] text-slate-400">Live view of technician workload and capacity</p>
                 </div>
               </div>
               <Link
-                href="/manager/team?tab=workload"
-                className="text-xs font-semibold text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                href="/manager/team"
+                className="px-2.5 py-1 rounded-lg border border-[#E2E8F0] hover:bg-slate-50 text-[11px] font-bold text-[#1677FF] transition-colors whitespace-nowrap"
               >
-                <span>Full Roster</span>
-                <ChevronRight className="w-3.5 h-3.5" />
+                View Full Roster
               </Link>
             </div>
 
-            <div className="divide-y divide-slate-100">
-              {technicians.map((tech) => (
-                <div key={tech.id} className="p-4 hover:bg-slate-50/60 transition-colors flex items-center gap-4">
-                  <img
-                    src={tech.avatar}
-                    alt={tech.name}
-                    className="w-10 h-10 rounded-full object-cover ring-2 ring-slate-100 flex-shrink-0"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-1">
+            {/* Technicians List */}
+            <div className="space-y-4 pt-3.5">
+              {/* Tech 1 */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-xs flex-shrink-0">
+                      TM
+                    </div>
+                    <div className="min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-slate-900">{tech.name}</span>
-                        <span
-                          className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                            tech.status === 'Available'
-                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                              : tech.status === 'On Field'
-                              ? 'bg-blue-50 text-blue-700 border border-blue-200'
-                              : 'bg-amber-50 text-amber-700 border border-amber-200'
-                          }`}
-                        >
-                          {tech.status}
+                        <span className="text-xs font-bold text-slate-900 truncate">Tariq Mansour</span>
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#EBF3FE] text-[#1677FF]">
+                          On Field
                         </span>
                       </div>
-                      <span className="text-xs font-bold text-slate-700">{tech.capacityPercentage}% Capacity</span>
-                    </div>
-
-                    <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden mb-2">
-                      <div
-                        className={`h-full rounded-full ${
-                          tech.capacityPercentage > 90
-                            ? 'bg-rose-500'
-                            : tech.capacityPercentage > 70
-                            ? 'bg-amber-500'
-                            : 'bg-blue-600'
-                        }`}
-                        style={{ width: `${tech.capacityPercentage}%` }}
-                      />
-                    </div>
-
-                    <div className="flex items-center justify-between text-[11px] text-slate-500">
-                      <span className="truncate flex items-center gap-1">
-                        <MapPin className="w-3 h-3 text-slate-400" />
-                        {tech.currentLocation}
-                      </span>
-                      <span>
-                        <strong className="text-slate-700">{tech.assignedTasks}</strong> Assigned ·{' '}
-                        <strong className="text-emerald-600">{tech.completedToday}</strong> Done Today
-                      </span>
+                      <p className="text-[11px] text-slate-400 truncate flex items-center gap-1">
+                        <MapPin className="w-3 h-3 flex-shrink-0" /> Mussafah Zone 12, Abu Dhabi
+                      </p>
                     </div>
                   </div>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <span className="text-xs font-black text-slate-900">85%</span>
+                    <Link
+                      href="/manager/team"
+                      className="px-2 py-1 rounded-md border border-slate-200 hover:bg-slate-50 text-[11px] font-semibold text-slate-700"
+                    >
+                      View
+                    </Link>
+                  </div>
                 </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Active Tasks & SLA Escalation Table */}
-          <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
-            <div className="px-5 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50/50">
-              <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-lg bg-indigo-100/70 text-indigo-700">
-                  <CheckSquare className="w-4 h-4" />
-                </div>
-                <div>
-                  <h2 className="text-sm font-bold text-slate-900">Task Dispatch & SLA Deadlines</h2>
-                  <p className="text-[11px] text-slate-500">Prioritized job queue and turnaround tracking</p>
+                {/* Progress bar */}
+                <div className="flex items-center justify-between text-[10px] text-slate-400 pt-0.5">
+                  <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden mr-3">
+                    <div className="bg-[#EA580C] h-1.5 rounded-full w-[85%]" />
+                  </div>
+                  <span className="whitespace-nowrap font-medium">4 Assigned • 2 Done Today</span>
                 </div>
               </div>
-              <button
-                onClick={() => setIsAssignModalOpen(true)}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg shadow-xs transition-colors"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>+ Assign Task</span>
-              </button>
-            </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-slate-50 text-slate-500 text-[11px] font-semibold border-b border-slate-200 uppercase tracking-wider">
-                  <tr>
-                    <th className="py-2.5 px-4">Task Details</th>
-                    <th className="py-2.5 px-3">Customer</th>
-                    <th className="py-2.5 px-3">Assigned To</th>
-                    <th className="py-2.5 px-3">Priority</th>
-                    <th className="py-2.5 px-3">Status</th>
-                    <th className="py-2.5 px-4 text-right">SLA</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {tasks.map((tsk) => (
-                    <tr key={tsk.id} className="hover:bg-slate-50/60 transition-colors">
-                      <td className="py-3 px-4">
-                        <p className="font-bold text-slate-900">{tsk.title}</p>
-                        <p className="text-[11px] text-slate-400">{tsk.id} · {tsk.category}</p>
-                      </td>
-                      <td className="py-3 px-3 text-slate-700 font-medium">{tsk.customerName}</td>
-                      <td className="py-3 px-3 text-slate-700">{tsk.assignedTo}</td>
-                      <td className="py-3 px-3">
-                        <span
-                          className={`px-2 py-0.5 text-[10px] font-bold rounded-full ${
-                            tsk.priority === 'Urgent'
-                              ? 'bg-rose-100 text-rose-800'
-                              : tsk.priority === 'High'
-                              ? 'bg-amber-100 text-amber-800'
-                              : 'bg-slate-100 text-slate-700'
-                          }`}
-                        >
-                          {tsk.priority}
+              {/* Tech 2 */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="w-8 h-8 rounded-full bg-slate-800 text-white flex items-center justify-center font-bold text-xs flex-shrink-0">
+                      ZQ
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-slate-900 truncate">Zayed Al Qasimi</span>
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#ECFDF5] text-[#059669]">
+                          Available
                         </span>
-                      </td>
-                      <td className="py-3 px-3">
-                        <span
-                          className={`px-2 py-0.5 text-[10px] font-bold rounded-full ${
-                            tsk.status === 'Completed'
-                              ? 'bg-emerald-100 text-emerald-800'
-                              : tsk.status === 'Overdue'
-                              ? 'bg-rose-100 text-rose-800'
-                              : 'bg-blue-100 text-blue-800'
-                          }`}
-                        >
-                          {tsk.status}
+                      </div>
+                      <p className="text-[11px] text-slate-400 truncate flex items-center gap-1">
+                        <MapPin className="w-3 h-3 flex-shrink-0" /> Khalidiya Hub, Abu Dhabi
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <span className="text-xs font-black text-slate-900">45%</span>
+                    <Link
+                      href="/manager/team"
+                      className="px-2 py-1 rounded-md border border-slate-200 hover:bg-slate-50 text-[11px] font-semibold text-slate-700"
+                    >
+                      View
+                    </Link>
+                  </div>
+                </div>
+                {/* Progress bar */}
+                <div className="flex items-center justify-between text-[10px] text-slate-400 pt-0.5">
+                  <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden mr-3">
+                    <div className="bg-[#1677FF] h-1.5 rounded-full w-[45%]" />
+                  </div>
+                  <span className="whitespace-nowrap font-medium">2 Assigned • 3 Done Today</span>
+                </div>
+              </div>
+
+              {/* Tech 3 */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="w-8 h-8 rounded-full bg-slate-700 text-white flex items-center justify-center font-bold text-xs flex-shrink-0">
+                      BA
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-slate-900 truncate">Bilal Ahmed</span>
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#FEE2E2] text-[#DC2626]">
+                          Overloaded
                         </span>
-                      </td>
-                      <td className="py-3 px-4 text-right font-semibold text-slate-700">
-                        {tsk.slaDeadline}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                      </div>
+                      <p className="text-[11px] text-slate-400 truncate flex items-center gap-1">
+                        <MapPin className="w-3 h-3 flex-shrink-0" /> Al Reem Island, Sector 4
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <span className="text-xs font-black text-slate-900">98%</span>
+                    <Link
+                      href="/manager/team"
+                      className="px-2 py-1 rounded-md border border-slate-200 hover:bg-slate-50 text-[11px] font-semibold text-slate-700"
+                    >
+                      View
+                    </Link>
+                  </div>
+                </div>
+                {/* Progress bar */}
+                <div className="flex items-center justify-between text-[10px] text-slate-400 pt-0.5">
+                  <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden mr-3">
+                    <div className="bg-[#DC2626] h-1.5 rounded-full w-[98%]" />
+                  </div>
+                  <span className="whitespace-nowrap font-medium">6 Assigned • 1 Done Today</span>
+                </div>
+              </div>
+
+              {/* Tech 4 */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-xs flex-shrink-0">
+                      IS
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-slate-900 truncate">Imran Shah</span>
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#ECFDF5] text-[#059669]">
+                          Available
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-400 truncate flex items-center gap-1">
+                        <MapPin className="w-3 h-3 flex-shrink-0" /> Hamdan Street Centre
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <span className="text-xs font-black text-slate-900">30%</span>
+                    <Link
+                      href="/manager/team"
+                      className="px-2 py-1 rounded-md border border-slate-200 hover:bg-slate-50 text-[11px] font-semibold text-slate-700"
+                    >
+                      View
+                    </Link>
+                  </div>
+                </div>
+                {/* Progress bar */}
+                <div className="flex items-center justify-between text-[10px] text-slate-400 pt-0.5">
+                  <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden mr-3">
+                    <div className="bg-[#0D9488] h-1.5 rounded-full w-[30%]" />
+                  </div>
+                  <span className="whitespace-nowrap font-medium">1 Assigned • 4 Done Today</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Right Col: Opportunities Pipeline & Recent Activities */}
-        <div className="space-y-6">
-          {/* Opportunities Pipeline Snapshot */}
-          <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
-            <div className="px-5 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50/50">
-              <div className="flex items-center gap-2">
-                <Briefcase className="w-4 h-4 text-blue-600" />
-                <h2 className="text-sm font-bold text-slate-900">Commercial Pipeline</h2>
+        {/* Column 2 (4 cols): Today's Tasks Timeline */}
+        <div className="lg:col-span-4 bg-white border border-[#E2E8F0] rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between pb-3.5 border-b border-[#F1F5F9]">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-[#E8F1FD] text-[#1677FF] flex items-center justify-center">
+                  <Calendar className="w-4 h-4" />
+                </div>
+                <h3 className="text-sm font-bold text-slate-900">Today&apos;s Tasks</h3>
               </div>
-              <Link href="/manager/sales" className="text-xs font-semibold text-blue-600 hover:underline">
+              <Link href="/manager/tasks" className="text-xs font-bold text-[#1677FF] hover:text-blue-700">
                 View All
               </Link>
             </div>
 
-            <div className="p-4 space-y-3">
-              {opportunities.map((opp) => (
-                <div key={opp.id} className="p-3 rounded-lg border border-slate-100 bg-slate-50/50 hover:bg-slate-50 transition-colors">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs font-bold text-slate-900 truncate">{opp.client}</span>
-                    <span className="text-xs font-extrabold text-blue-700">AED {opp.value.toLocaleString()}</span>
+            {/* Task Timeline List */}
+            <div className="space-y-4 pt-3.5">
+              {/* Task 1 */}
+              <Link
+                href="/manager/tasks"
+                className="flex items-start justify-between gap-3 group hover:bg-[#F8FAFC] p-1.5 -mx-1.5 rounded-xl transition-colors"
+              >
+                <div className="flex items-start gap-2.5 min-w-0">
+                  <div className="flex items-center gap-1.5 pt-0.5">
+                    <span className="w-2 h-2 rounded-full bg-[#1677FF] flex-shrink-0" />
+                    <span className="text-[11px] text-slate-500 font-bold whitespace-nowrap">09:00 AM</span>
                   </div>
-                  <p className="text-[11px] text-slate-500 mb-2 truncate">{opp.title}</p>
-                  <div className="flex items-center justify-between text-[10px] font-semibold text-slate-500">
-                    <span className="px-2 py-0.5 rounded bg-blue-100 text-blue-800 font-bold">{opp.stage}</span>
-                    <span>Close: {opp.expectedCloseDate}</span>
+                  <div className="min-w-0">
+                    <div className="text-xs font-bold text-slate-900 group-hover:text-[#1677FF] transition-colors truncate">
+                      Emergency Chiller Compressor Fix
+                    </div>
+                    <p className="text-[11px] text-slate-500 truncate">Emaar Hospitality Group</p>
+                    <span className="inline-block mt-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#EBF3FE] text-[#1677FF]">
+                      In Progress
+                    </span>
                   </div>
                 </div>
-              ))}
+                <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-0.5 transition-transform flex-shrink-0 mt-1" />
+              </Link>
+
+              {/* Task 2 */}
+              <Link
+                href="/manager/tasks"
+                className="flex items-start justify-between gap-3 group hover:bg-[#F8FAFC] p-1.5 -mx-1.5 rounded-xl transition-colors"
+              >
+                <div className="flex items-start gap-2.5 min-w-0">
+                  <div className="flex items-center gap-1.5 pt-0.5">
+                    <span className="w-2 h-2 rounded-full bg-[#1677FF] flex-shrink-0" />
+                    <span className="text-[11px] text-slate-500 font-bold whitespace-nowrap">01:00 PM</span>
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-xs font-bold text-slate-900 group-hover:text-[#1677FF] transition-colors truncate">
+                      AC Unit Preventive Maintenance
+                    </div>
+                    <p className="text-[11px] text-slate-500 truncate">Al Naboodah MEP</p>
+                    <span className="inline-block mt-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#FEF3C7] text-[#D97706]">
+                      Pending
+                    </span>
+                  </div>
+                </div>
+                <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-0.5 transition-transform flex-shrink-0 mt-1" />
+              </Link>
+
+              {/* Task 3 */}
+              <Link
+                href="/manager/tasks"
+                className="flex items-start justify-between gap-3 group hover:bg-[#F8FAFC] p-1.5 -mx-1.5 rounded-xl transition-colors"
+              >
+                <div className="flex items-start gap-2.5 min-w-0">
+                  <div className="flex items-center gap-1.5 pt-0.5">
+                    <span className="w-2 h-2 rounded-full bg-[#EA580C] flex-shrink-0" />
+                    <span className="text-[11px] text-slate-500 font-bold whitespace-nowrap">03:30 PM</span>
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-xs font-bold text-slate-900 group-hover:text-[#1677FF] transition-colors truncate">
+                      Split AC Gas Refill
+                    </div>
+                    <p className="text-[11px] text-slate-500 truncate">Luxury Castle Contracting</p>
+                    <span className="inline-block mt-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#FEF3C7] text-[#D97706]">
+                      Pending
+                    </span>
+                  </div>
+                </div>
+                <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-0.5 transition-transform flex-shrink-0 mt-1" />
+              </Link>
+
+              {/* Task 4 */}
+              <Link
+                href="/manager/tasks"
+                className="flex items-start justify-between gap-3 group hover:bg-[#F8FAFC] p-1.5 -mx-1.5 rounded-xl transition-colors"
+              >
+                <div className="flex items-start gap-2.5 min-w-0">
+                  <div className="flex items-center gap-1.5 pt-0.5">
+                    <span className="w-2 h-2 rounded-full bg-[#059669] flex-shrink-0" />
+                    <span className="text-[11px] text-slate-500 font-bold whitespace-nowrap">05:30 PM</span>
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-xs font-bold text-slate-900 group-hover:text-[#1677FF] transition-colors truncate">
+                      Site Inspection
+                    </div>
+                    <p className="text-[11px] text-slate-500 truncate">Golden Saif Construction</p>
+                    <span className="inline-block mt-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#D1FAE5] text-[#059669]">
+                      Completed
+                    </span>
+                  </div>
+                </div>
+                <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-0.5 transition-transform flex-shrink-0 mt-1" />
+              </Link>
             </div>
           </div>
+        </div>
 
-          {/* Scheduled Field Activities & Client Visits */}
-          <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
-            <div className="px-5 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50/50">
-              <div className="flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-indigo-600" />
-                <h2 className="text-sm font-bold text-slate-900">Today&apos;s Field Schedule</h2>
+        {/* Column 3 (3 cols): Commercial Pipeline */}
+        <div className="lg:col-span-3 bg-white border border-[#E2E8F0] rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between pb-3.5 border-b border-[#F1F5F9]">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-[#E8F1FD] text-[#1677FF] flex items-center justify-center">
+                  <Briefcase className="w-4 h-4" />
+                </div>
+                <h3 className="text-sm font-bold text-slate-900">Commercial Pipeline</h3>
               </div>
-              <Link href="/manager/activities" className="text-xs font-semibold text-blue-600 hover:underline">
-                Agenda
+              <Link href="/manager/sales" className="text-xs font-bold text-[#1677FF] hover:text-blue-700">
+                View All
               </Link>
             </div>
 
-            <div className="divide-y divide-slate-100">
-              {activities.map((act) => (
-                <div key={act.id} className="p-4 hover:bg-slate-50/60 transition-colors">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs font-bold text-slate-900">{act.title}</span>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-700">{act.type}</span>
+            {/* Pipeline Deals List */}
+            <div className="space-y-3.5 pt-3.5">
+              {/* Deal 1 */}
+              <Link
+                href="/manager/sales"
+                className="flex items-center justify-between gap-2 group hover:bg-[#F8FAFC] p-1.5 -mx-1.5 rounded-xl transition-colors"
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="w-7 h-7 rounded-lg bg-[#F1F5F9] text-slate-600 flex items-center justify-center flex-shrink-0">
+                    <Building2 className="w-3.5 h-3.5 text-[#1677FF]" />
                   </div>
-                  <p className="text-[11px] text-slate-500 mb-1">{act.contactPerson}</p>
-                  <div className="flex items-center gap-2 text-[10px] text-slate-400">
-                    <Clock className="w-3 h-3 text-slate-400" />
-                    <span>{act.time} · {act.date}</span>
+                  <div className="min-w-0">
+                    <div className="text-xs font-bold text-slate-900 truncate group-hover:text-[#1677FF]">
+                      Al Ain Hospital Group
+                    </div>
+                    <p className="text-[10px] text-slate-400 truncate">Annual HVAC Maintenance 2026-27</p>
+                    <span className="inline-block mt-0.5 px-1.5 py-0.5 rounded text-[9px] font-bold bg-[#EBF3FE] text-[#1677FF]">
+                      Under Approval
+                    </span>
                   </div>
                 </div>
-              ))}
+                <div className="text-right flex-shrink-0">
+                  <span className="text-xs font-black text-[#1677FF]">AED 480,000</span>
+                  <ChevronRight className="w-3.5 h-3.5 text-slate-400 inline-block ml-1 group-hover:translate-x-0.5 transition-transform" />
+                </div>
+              </Link>
+
+              {/* Deal 2 */}
+              <Link
+                href="/manager/sales"
+                className="flex items-center justify-between gap-2 group hover:bg-[#F8FAFC] p-1.5 -mx-1.5 rounded-xl transition-colors"
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="w-7 h-7 rounded-lg bg-[#F1F5F9] text-slate-600 flex items-center justify-center flex-shrink-0">
+                    <Building2 className="w-3.5 h-3.5 text-[#1677FF]" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-xs font-bold text-slate-900 truncate group-hover:text-[#1677FF]">
+                      Etihad Warehousing Hub
+                    </div>
+                    <p className="text-[10px] text-slate-400 truncate">Industrial VRF Air Filtration Retrofit</p>
+                    <span className="inline-block mt-0.5 px-1.5 py-0.5 rounded text-[9px] font-bold bg-[#EBF3FE] text-[#1677FF]">
+                      Quotation Sent
+                    </span>
+                  </div>
+                </div>
+                <div className="text-right flex-shrink-0">
+                  <span className="text-xs font-black text-[#1677FF]">AED 295,000</span>
+                  <ChevronRight className="w-3.5 h-3.5 text-slate-400 inline-block ml-1 group-hover:translate-x-0.5 transition-transform" />
+                </div>
+              </Link>
+
+              {/* Deal 3 */}
+              <Link
+                href="/manager/sales"
+                className="flex items-center justify-between gap-2 group hover:bg-[#F8FAFC] p-1.5 -mx-1.5 rounded-xl transition-colors"
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="w-7 h-7 rounded-lg bg-[#F1F5F9] text-slate-600 flex items-center justify-center flex-shrink-0">
+                    <Building2 className="w-3.5 h-3.5 text-[#1677FF]" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-xs font-bold text-slate-900 truncate group-hover:text-[#1677FF]">
+                      Yas Marina Residential Towers
+                    </div>
+                    <p className="text-[10px] text-slate-400 truncate">Smart Thermostat &amp; Energy Saving</p>
+                    <span className="inline-block mt-0.5 px-1.5 py-0.5 rounded text-[9px] font-bold bg-[#FEF3C7] text-[#D97706]">
+                      Negotiation
+                    </span>
+                  </div>
+                </div>
+                <div className="text-right flex-shrink-0">
+                  <span className="text-xs font-black text-[#1677FF]">AED 175,000</span>
+                  <ChevronRight className="w-3.5 h-3.5 text-slate-400 inline-block ml-1 group-hover:translate-x-0.5 transition-transform" />
+                </div>
+              </Link>
+
+              {/* Deal 4 */}
+              <Link
+                href="/manager/sales"
+                className="flex items-center justify-between gap-2 group hover:bg-[#F8FAFC] p-1.5 -mx-1.5 rounded-xl transition-colors"
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="w-7 h-7 rounded-lg bg-[#F1F5F9] text-slate-600 flex items-center justify-center flex-shrink-0">
+                    <Building2 className="w-3.5 h-3.5 text-[#1677FF]" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-xs font-bold text-slate-900 truncate group-hover:text-[#1677FF]">
+                      Abu Dhabi Mall
+                    </div>
+                    <p className="text-[10px] text-slate-400 truncate">HVAC Upgrade</p>
+                  </div>
+                </div>
+                <div className="text-right flex-shrink-0">
+                  <span className="text-xs font-black text-[#1677FF]">AED 220,000</span>
+                  <ChevronRight className="w-3.5 h-3.5 text-slate-400 inline-block ml-1 group-hover:translate-x-0.5 transition-transform" />
+                </div>
+              </Link>
             </div>
           </div>
         </div>
       </div>
 
-      {/* ── Assign Task Modal ────────────────────────────────────────────── */}
+      {/* ── 4. BOTTOM SECTION (4 CARDS) ── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+        {/* Card 1: Recent Activities */}
+        <div className="bg-white border border-[#E2E8F0] rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between pb-3.5 border-b border-[#F1F5F9]">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-lg bg-[#E8F1FD] text-[#1677FF] flex items-center justify-center">
+                  <Clock className="w-3.5 h-3.5" />
+                </div>
+                <h3 className="text-sm font-bold text-slate-900">Recent Activities</h3>
+              </div>
+              <Link href="/manager/activities" className="text-xs font-bold text-[#1677FF] hover:text-blue-700">
+                View All
+              </Link>
+            </div>
+
+            <div className="space-y-3.5 pt-3.5">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 min-w-0">
+                  <div className="w-5 h-5 rounded-full bg-[#ECFDF5] text-[#059669] flex items-center justify-center flex-shrink-0">
+                    <Check className="w-3 h-3 stroke-[3]" />
+                  </div>
+                  <span className="text-xs text-slate-800 truncate">
+                    Checked in at site <span className="text-slate-400">(TSK-8921)</span>
+                  </span>
+                </div>
+                <span className="text-[10px] text-slate-400 whitespace-nowrap">08:05 AM</span>
+              </div>
+
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 min-w-0">
+                  <div className="w-5 h-5 rounded-full bg-[#EFF6FF] text-[#1677FF] flex items-center justify-center flex-shrink-0">
+                    <FileText className="w-3 h-3" />
+                  </div>
+                  <span className="text-xs text-slate-800 truncate">
+                    Added service note <span className="text-slate-400">(TSK-8920)</span>
+                  </span>
+                </div>
+                <span className="text-[10px] text-slate-400 whitespace-nowrap">10:20 AM</span>
+              </div>
+
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 min-w-0">
+                  <div className="w-5 h-5 rounded-full bg-[#F5F3FF] text-[#7C3AED] flex items-center justify-center flex-shrink-0">
+                    <ImageIcon className="w-3 h-3" />
+                  </div>
+                  <span className="text-xs text-slate-800 truncate">
+                    Uploaded images <span className="text-slate-400">(TSK-8920)</span>
+                  </span>
+                </div>
+                <span className="text-[10px] text-slate-400 whitespace-nowrap">02:15 PM</span>
+              </div>
+
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 min-w-0">
+                  <div className="w-5 h-5 rounded-full bg-[#FFFBEB] text-[#D97706] flex items-center justify-center flex-shrink-0">
+                    <Package className="w-3 h-3" />
+                  </div>
+                  <span className="text-xs text-slate-800 truncate">
+                    Requested material <span className="text-slate-400">(TSK-8918)</span>
+                  </span>
+                </div>
+                <span className="text-[10px] text-slate-400 whitespace-nowrap">03:40 PM</span>
+              </div>
+
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 min-w-0">
+                  <div className="w-5 h-5 rounded-full bg-[#ECFDF5] text-[#059669] flex items-center justify-center flex-shrink-0">
+                    <Check className="w-3 h-3 stroke-[3]" />
+                  </div>
+                  <span className="text-xs text-slate-800 truncate">
+                    Completed job <span className="text-slate-400">(TSK-8891)</span>
+                  </span>
+                </div>
+                <span className="text-[10px] text-slate-400 whitespace-nowrap">Yesterday</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Card 2: Material Requests */}
+        <div className="bg-white border border-[#E2E8F0] rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between pb-3.5 border-b border-[#F1F5F9]">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-lg bg-[#E8F1FD] text-[#1677FF] flex items-center justify-center">
+                  <Package className="w-3.5 h-3.5" />
+                </div>
+                <h3 className="text-sm font-bold text-slate-900">Material Requests</h3>
+              </div>
+              <Link href="/worker/materials" className="text-xs font-bold text-[#1677FF] hover:text-blue-700">
+                View All
+              </Link>
+            </div>
+
+            <div className="space-y-3 pt-3">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 min-w-0">
+                  <div className="w-7 h-7 rounded-lg bg-[#F8FAFC] border border-slate-200 flex items-center justify-center text-slate-600 flex-shrink-0">
+                    <Package className="w-3.5 h-3.5 text-[#1677FF]" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-xs font-bold text-slate-900 truncate">R410A Refrigerant</div>
+                    <div className="text-[10px] text-slate-400 font-medium">2 Cylinders</div>
+                  </div>
+                </div>
+                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#FEF3C7] text-[#D97706]">
+                  Pending
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 min-w-0">
+                  <div className="w-7 h-7 rounded-lg bg-[#F8FAFC] border border-slate-200 flex items-center justify-center text-slate-600 flex-shrink-0">
+                    <Package className="w-3.5 h-3.5 text-emerald-600" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-xs font-bold text-slate-900 truncate">Compressor Oil</div>
+                    <div className="text-[10px] text-slate-400 font-medium">1 Bottle</div>
+                  </div>
+                </div>
+                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#D1FAE5] text-[#059669]">
+                  Approved
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 min-w-0">
+                  <div className="w-7 h-7 rounded-lg bg-[#F8FAFC] border border-slate-200 flex items-center justify-center text-slate-600 flex-shrink-0">
+                    <ShieldCheck className="w-3.5 h-3.5 text-amber-600" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-xs font-bold text-slate-900 truncate">Filter Drier</div>
+                    <div className="text-[10px] text-slate-400 font-medium">3 Units</div>
+                  </div>
+                </div>
+                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#FEF3C7] text-[#D97706]">
+                  Pending
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 min-w-0">
+                  <div className="w-7 h-7 rounded-lg bg-[#F8FAFC] border border-slate-200 flex items-center justify-center text-slate-600 flex-shrink-0">
+                    <Package className="w-3.5 h-3.5 text-slate-500" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-xs font-bold text-slate-900 truncate">Copper Pipe</div>
+                    <div className="text-[10px] text-slate-400 font-medium">5 Meters</div>
+                  </div>
+                </div>
+                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#FEF3C7] text-[#D97706]">
+                  Pending
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Card 3: Team Performance Donut */}
+        <div className="bg-white border border-[#E2E8F0] rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between pb-3.5 border-b border-[#F1F5F9]">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-lg bg-[#E8F1FD] text-[#1677FF] flex items-center justify-center">
+                  <BarChart2 className="w-3.5 h-3.5" />
+                </div>
+                <h3 className="text-sm font-bold text-slate-900">Team Performance</h3>
+              </div>
+              <Link href="/manager/performance" className="text-xs font-bold text-[#1677FF] hover:text-blue-700">
+                View Report
+              </Link>
+            </div>
+
+            <div className="flex items-center justify-between gap-3 pt-4">
+              {/* Circular Gauge */}
+              <div className="relative w-24 h-24 flex items-center justify-center flex-shrink-0">
+                <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                  <path
+                    className="text-slate-100"
+                    strokeWidth="3.5"
+                    stroke="currentColor"
+                    fill="none"
+                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                  />
+                  <path
+                    className="text-[#059669]"
+                    strokeDasharray="75, 100"
+                    strokeWidth="3.5"
+                    strokeLinecap="round"
+                    stroke="currentColor"
+                    fill="none"
+                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                  />
+                </svg>
+                <div className="absolute flex flex-col items-center justify-center text-center">
+                  <span className="text-base font-black text-slate-900 leading-none">75%</span>
+                  <span className="text-[9px] text-slate-400 font-medium">Task Completion</span>
+                </div>
+              </div>
+
+              {/* Legend List */}
+              <div className="space-y-2 text-xs">
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#059669]" />
+                  <span className="font-bold text-slate-900">48</span>
+                  <span className="text-slate-500 text-[11px]">Completed</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#D97706]" />
+                  <span className="font-bold text-slate-900">12</span>
+                  <span className="text-slate-500 text-[11px]">Pending</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#DC2626]" />
+                  <span className="font-bold text-slate-900">3</span>
+                  <span className="text-slate-500 text-[11px]">Overdue</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Card 4: Quick Actions */}
+        <div className="bg-white border border-[#E2E8F0] rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col justify-between">
+          <div>
+            <div className="flex items-center gap-2 pb-3.5 border-b border-[#F1F5F9]">
+              <div className="w-7 h-7 rounded-lg bg-[#E8F1FD] text-[#1677FF] flex items-center justify-center">
+                <Zap className="w-3.5 h-3.5" />
+              </div>
+              <h3 className="text-sm font-bold text-slate-900">Quick Actions</h3>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2.5 pt-3.5">
+              {/* Tile 1: Assign Task */}
+              <button
+                type="button"
+                onClick={() => setIsAssignModalOpen(true)}
+                className="p-3 rounded-xl bg-[#EFF6FF] hover:bg-blue-100 text-[#1677FF] border border-[#BFDBFE] flex flex-col items-center justify-center gap-1.5 transition-colors cursor-pointer text-center"
+              >
+                <UserCheck className="w-4 h-4" />
+                <span className="text-xs font-bold">Assign Task</span>
+              </button>
+
+              {/* Tile 2: Request Material */}
+              <Link
+                href="/worker/materials?action=new"
+                className="p-3 rounded-xl bg-[#ECFDF5] hover:bg-emerald-100 text-[#059669] border border-[#A7F3D0] flex flex-col items-center justify-center gap-1.5 transition-colors text-center"
+              >
+                <Package className="w-4 h-4" />
+                <span className="text-xs font-bold">Request Material</span>
+              </Link>
+
+              {/* Tile 3: Generate Report */}
+              <Link
+                href="/manager/reports"
+                className="p-3 rounded-xl bg-[#F5F3FF] hover:bg-purple-100 text-[#7C3AED] border border-[#DDD6FE] flex flex-col items-center justify-center gap-1.5 transition-colors text-center"
+              >
+                <FileText className="w-4 h-4" />
+                <span className="text-xs font-bold">Generate Report</span>
+              </Link>
+
+              {/* Tile 4: Open Calendar */}
+              <Link
+                href="/manager/calendar"
+                className="p-3 rounded-xl bg-[#FFFBEB] hover:bg-amber-100 text-[#D97706] border border-[#FDE68A] flex flex-col items-center justify-center gap-1.5 transition-colors text-center"
+              >
+                <Calendar className="w-4 h-4" />
+                <span className="text-xs font-bold">Open Calendar</span>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── 5. QUICK ASSIGN TASK MODAL ── */}
       {isAssignModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs animate-in fade-in duration-100">
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-lg w-full p-6 space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4 animate-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div>
-                <h3 className="text-base font-bold text-slate-900">Assign New Operational Task</h3>
-                <p className="text-xs text-slate-500">Dispatch job to field technician with SLA deadline</p>
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-[#E8F1FD] text-[#1677FF] flex items-center justify-center">
+                  <UserCheck className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900">Assign New Work Order</h3>
+                  <p className="text-[11px] text-slate-400">Dispatch field technician with real-time tracking</p>
+                </div>
               </div>
               <button
                 onClick={() => setIsAssignModalOpen(false)}
-                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100"
+                className="text-slate-400 hover:text-slate-600 p-1"
               >
-                ✕
+                <X className="w-4 h-4" />
               </button>
             </div>
 
             <form onSubmit={handleCreateTask} className="space-y-3.5 text-xs">
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">Task Title *</label>
+                <label className="block font-semibold text-slate-700 mb-1">Work Order / Task Title</label>
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Chiller Condenser Descaling & Test"
+                  placeholder="e.g. Centrifugal Chiller Vibration & Bearing Check"
                   value={newTaskForm.title}
                   onChange={(e) => setNewTaskForm({ ...newTaskForm, title: e.target.value })}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-900 focus:border-blue-600 focus:bg-white focus:outline-none"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 focus:ring-2 focus:ring-blue-500/20 focus:border-[#1677FF]"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Customer / Client *</label>
+                  <label className="block font-semibold text-slate-700 mb-1">Customer / Facility</label>
                   <input
                     type="text"
                     required
-                    placeholder="e.g. Lumina Health Complex"
+                    placeholder="e.g. Emaar Hospitality Group"
                     value={newTaskForm.customerName}
                     onChange={(e) => setNewTaskForm({ ...newTaskForm, customerName: e.target.value })}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-900 focus:border-blue-600 focus:bg-white focus:outline-none"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 focus:ring-2 focus:ring-blue-500/20 focus:border-[#1677FF]"
                   />
                 </div>
+
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Assign Technician *</label>
+                  <label className="block font-semibold text-slate-700 mb-1">Assign Technician</label>
                   <select
                     value={newTaskForm.assignedTo}
                     onChange={(e) => setNewTaskForm({ ...newTaskForm, assignedTo: e.target.value })}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-900 focus:border-blue-600 focus:bg-white focus:outline-none"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 focus:ring-2 focus:ring-blue-500/20 focus:border-[#1677FF]"
                   >
-                    {technicians.map((t) => (
-                      <option key={t.id} value={t.name}>
-                        {t.name} ({t.status} - {t.capacityPercentage}% Cap)
-                      </option>
-                    ))}
+                    <option value="Tariq Mansour">Tariq Mansour (On Field - 85%)</option>
+                    <option value="Zayed Al Qasimi">Zayed Al Qasimi (Available - 45%)</option>
+                    <option value="Bilal Ahmed">Bilal Ahmed (Overloaded - 98%)</option>
+                    <option value="Imran Shah">Imran Shah (Available - 30%)</option>
                   </select>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Priority</label>
+                  <label className="block font-semibold text-slate-700 mb-1">Priority Level</label>
                   <select
                     value={newTaskForm.priority}
                     onChange={(e) => setNewTaskForm({ ...newTaskForm, priority: e.target.value as any })}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-900 focus:border-blue-600 focus:bg-white focus:outline-none"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 focus:ring-2 focus:ring-blue-500/20 focus:border-[#1677FF]"
                   >
-                    <option value="Urgent">Urgent (4 Hours SLA)</option>
-                    <option value="High">High (8 Hours SLA)</option>
-                    <option value="Medium">Medium (24 Hours SLA)</option>
-                    <option value="Low">Low (48 Hours SLA)</option>
+                    <option value="Urgent">Urgent (SLA: 2h)</option>
+                    <option value="High">High (SLA: 4h)</option>
+                    <option value="Medium">Medium (SLA: 8h)</option>
+                    <option value="Low">Low (SLA: 24h)</option>
                   </select>
                 </div>
+
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Location / Site</label>
+                  <label className="block font-semibold text-slate-700 mb-1">Scheduled Window</label>
                   <input
                     type="text"
-                    value={newTaskForm.location}
-                    onChange={(e) => setNewTaskForm({ ...newTaskForm, location: e.target.value })}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-900 focus:border-blue-600 focus:bg-white focus:outline-none"
+                    value={newTaskForm.scheduledTime}
+                    onChange={(e) => setNewTaskForm({ ...newTaskForm, scheduledTime: e.target.value })}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 focus:ring-2 focus:ring-blue-500/20 focus:border-[#1677FF]"
                   />
                 </div>
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+              <div>
+                <label className="block font-semibold text-slate-700 mb-1">Site Address / Location</label>
+                <input
+                  type="text"
+                  value={newTaskForm.location}
+                  onChange={(e) => setNewTaskForm({ ...newTaskForm, location: e.target.value })}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 focus:ring-2 focus:ring-blue-500/20 focus:border-[#1677FF]"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={() => setIsAssignModalOpen(false)}
-                  className="px-3.5 py-1.5 rounded-lg border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                  className="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-100 font-semibold"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs"
+                  className="px-5 py-2 rounded-xl bg-[#1677FF] hover:bg-blue-600 text-white font-bold shadow-xs transition-colors cursor-pointer"
                 >
-                  Dispatch Task
+                  Confirm &amp; Dispatch
                 </button>
               </div>
             </form>
           </div>
         </div>
       )}
-    </ManagerShell>
+    </div>
   );
 }

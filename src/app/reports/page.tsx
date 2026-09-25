@@ -101,6 +101,13 @@ const CEZCON_STANDARD_REPORTS = [
   { id: 13, title: 'Account Statement', description: 'Detailed account transactions and financial summaries', canCustomize: false },
   { id: 14, title: 'Stock Movement Report', description: 'Stock transfers, receipts, and dispatch logs across branches', canCustomize: false },
   { id: 15, title: 'Supplier Statement', description: 'Supplier purchase invoices, payment schedules, and outstanding balances', canCustomize: true },
+  { id: 16, title: 'Lead Report', description: 'Inbound lead attribution, conversion lifecycle, and sales stage analytics', canCustomize: true },
+  { id: 17, title: 'Customer Report', description: 'Customer AMC contracts, renewal logs, and satisfaction audits', canCustomize: false },
+  { id: 18, title: 'Task Report', description: 'Operational turnaround time, completion rate, and overdue SLA log', canCustomize: true },
+  { id: 19, title: 'Employee Performance', description: 'Individual technician first-time fix rate, job hours, and ratings', canCustomize: false },
+  { id: 20, title: 'Team Performance', description: 'Team capacity utilization, workload distribution, and regional metrics', canCustomize: false },
+  { id: 21, title: 'Activity Report', description: 'Daily technician visits, onsite audits, and client interactions', canCustomize: false },
+  { id: 22, title: 'Purchase Report', description: 'Purchase order fulfillment, supplier lead times, and spend analysis', canCustomize: true },
 ];
 
 const TOOLTIP_STYLE = {

@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
   Shield,
   Plus,
@@ -14,6 +15,12 @@ import {
   ExternalLink,
   DollarSign,
   Calendar,
+  CheckCircle2,
+  TrendingUp,
+  FolderTree,
+  Activity,
+  Clock,
+  BarChart3,
 } from 'lucide-react';
 import { useEnterpriseCrm } from '@/context/EnterpriseCrmContext';
 import { Card } from '@/components/ui/Card';
@@ -22,9 +29,30 @@ import { BackButton } from '@/components/ui/BackButton';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { Input, Select } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, cn } from '@/lib/utils';
 
-export default function CustomersPage() {
+function CustomersContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Redirect legacy query parameters to dedicated sub-pages
+  useEffect(() => {
+    const view = searchParams.get('view');
+    const tab = searchParams.get('tab');
+
+    if (view === 'contacts' || tab === 'contacts') {
+      router.replace('/customers/contacts');
+    } else if (view === 'groups' || tab === 'groups') {
+      router.replace('/customers/groups');
+    } else if (view === 'activities' || tab === 'activities') {
+      router.replace('/customers/activities');
+    } else if (view === 'followups' || tab === 'followups') {
+      router.replace('/customers/followups');
+    } else if (view === 'reports' || tab === 'reports' || tab === 'customers') {
+      router.replace('/customers/reports');
+    }
+  }, [searchParams, router]);
+
   const { customers, addCustomer, deleteCustomer, globalSearch } = useEnterpriseCrm();
 
   const [search, setSearch] = useState('');
@@ -79,26 +107,30 @@ export default function CustomersPage() {
     });
   };
 
+  const totalSpendSum = customers.reduce((sum, c) => sum + (c.totalSpend || 0), 0);
+  const activeCount = customers.filter((c) => c.status === 'Active').length;
+  const prospectCount = customers.filter((c) => c.status === 'Prospect').length;
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 pb-16">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-200 pb-3">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-2xs">
         <div className="flex items-center gap-3">
           <BackButton />
           <div>
-            <h1 className="text-lg font-bold text-slate-900 tracking-tight flex items-center gap-2">
-              <Shield className="w-5 h-5 text-blue-600" /> Customer & Account Directory
-            </h1>
-            <p className="text-xs text-slate-500">
-              Manage corporate customer accounts, primary contacts, and total lifetime contract value.
+            <div className="flex items-center gap-2">
+              <div className="p-1 rounded bg-blue-50 text-[#1677FF]">
+                <Shield className="w-5 h-5" />
+              </div>
+              <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Customer &amp; Account Directory</h1>
+            </div>
+            <p className="text-xs text-slate-500 mt-0.5 font-medium">
+              Manage corporate customer accounts, primary stakeholders, and total lifetime contract value.
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" icon={<Download className="w-3.5 h-3.5" />}>
-            Export Customers
-          </Button>
+        <div className="flex items-center gap-2 self-start sm:self-auto">
           <Button
             variant="primary"
             size="sm"
@@ -110,25 +142,52 @@ export default function CustomersPage() {
         </div>
       </div>
 
+      {/* 4 Summary KPI Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs">
+          <span className="text-xs font-bold text-slate-500">Total Customer Accounts</span>
+          <p className="text-2xl font-black text-slate-900 mt-1">{customers.length}</p>
+          <span className="text-[11px] font-semibold text-slate-400">Verified Corporate CRM</span>
+        </div>
+
+        <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs">
+          <span className="text-xs font-bold text-emerald-600">Active Retainer Accounts</span>
+          <p className="text-2xl font-black text-emerald-600 mt-1">{activeCount}</p>
+          <span className="text-[11px] font-semibold text-emerald-600">Under Active Service / AMC</span>
+        </div>
+
+        <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs">
+          <span className="text-xs font-bold text-blue-600">Total Portfolio Value</span>
+          <p className="text-2xl font-black text-blue-600 mt-1">AED {(totalSpendSum / 1000000).toFixed(2)}M</p>
+          <span className="text-[11px] font-semibold text-blue-600">Cumulative Spend</span>
+        </div>
+
+        <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs">
+          <span className="text-xs font-bold text-purple-600">Prospect Accounts</span>
+          <p className="text-2xl font-black text-purple-600 mt-1">{prospectCount}</p>
+          <span className="text-[11px] font-semibold text-purple-600">Contract Negotiation</span>
+        </div>
+      </div>
+
       {/* Filter Bar */}
-      <Card className="p-3.5 bg-white border-slate-200">
+      <Card className="p-3.5 bg-white border-slate-200 shadow-2xs">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
-            <div className="relative w-full sm:w-64">
+            <div className="relative w-full sm:w-72">
               <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
-                placeholder="Search customers..."
+                placeholder="Search customers, contacts, groups..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-md pl-8 pr-2 py-1.5 text-xs focus:outline-none focus:border-blue-600"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-8 pr-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/20"
               />
             </div>
 
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="bg-slate-50 border border-slate-200 rounded-md px-3 py-1.5 text-xs focus:outline-none focus:border-blue-600"
+              className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800 focus:outline-none cursor-pointer"
             >
               <option value="All">All Statuses</option>
               <option value="Active">Active</option>
@@ -137,8 +196,8 @@ export default function CustomersPage() {
             </select>
           </div>
 
-          <span className="text-xs text-slate-500">
-            Showing <b className="text-blue-600">{filteredCustomers.length}</b> verified customer accounts
+          <span className="text-xs font-semibold text-slate-500">
+            Showing <b className="text-blue-600">{filteredCustomers.length}</b> verified accounts
           </span>
         </div>
       </Card>
@@ -146,14 +205,14 @@ export default function CustomersPage() {
       {/* Mobile Card List View (Phones & Small screens < md) */}
       <div className="block md:hidden space-y-3">
         {filteredCustomers.length === 0 ? (
-          <div className="bg-white border border-slate-200 rounded-lg p-6 text-center text-xs text-slate-500">
+          <div className="bg-white border border-slate-200 rounded-xl p-6 text-center text-xs text-slate-500">
             No customers found matching your criteria.
           </div>
         ) : (
           filteredCustomers.map((cust, idx) => (
             <div
               key={cust.id}
-              className="bg-white border border-slate-200 rounded-lg p-4 shadow-sm space-y-3"
+              className="bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs space-y-3"
             >
               {/* Card Top: Number, Name, Status */}
               <div className="flex items-start justify-between gap-2">
@@ -172,7 +231,7 @@ export default function CustomersPage() {
               </div>
 
               {/* Contact details */}
-              <div className="grid grid-cols-1 gap-1.5 text-xs text-slate-600 bg-slate-50/80 p-2.5 rounded-md border border-slate-100">
+              <div className="grid grid-cols-1 gap-1.5 text-xs text-slate-600 bg-slate-50/80 p-2.5 rounded-xl border border-slate-100">
                 <div className="flex items-center gap-2">
                   <User className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                   <span className="font-semibold text-slate-800">{cust.contactPerson}</span>
@@ -222,7 +281,7 @@ export default function CustomersPage() {
       </div>
 
       {/* Desktop Customers Table (md and up) */}
-      <Card className="hidden md:block overflow-hidden border-slate-200 bg-white">
+      <Card className="hidden md:block overflow-hidden border-slate-200 bg-white rounded-2xl shadow-2xs">
         <div className="overflow-x-auto w-full">
           <table className="w-full text-left text-xs border-collapse min-w-[900px]">
             <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider text-[11px]">
@@ -386,5 +445,13 @@ export default function CustomersPage() {
         </form>
       </Modal>
     </div>
+  );
+}
+
+export default function CustomersPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-xs text-slate-400">Loading Customers...</div>}>
+      <CustomersContent />
+    </Suspense>
   );
 }

@@ -4,7 +4,7 @@
  * with real backend APIs in Phase 2/3.
  */
 
-export type UserRole = 'super_admin' | 'admin' | 'manager' | 'worker';
+export type UserRole = 'super_admin' | 'admin' | 'manager' | 'employee' | 'worker';
 
 export interface MockAuthUser {
   id: string;
@@ -110,7 +110,7 @@ const MOCK_CREDENTIALS: Array<{
     redirectUrl: '/manager/dashboard',
     user: {
       id: 'usr_manager_001',
-      name: 'Alex Rivera',
+      name: 'muhammed Shibil',
       email: 'manager@gmail.com',
       role: 'manager',
       organizationId: 'org_cool_tech_001',
@@ -125,13 +125,58 @@ const MOCK_CREDENTIALS: Array<{
     redirectUrl: '/manager/dashboard',
     user: {
       id: 'usr_manager_001',
-      name: 'Alex Rivera',
+      name: 'muhammed Shibil',
       email: 'manager@cooltechuae.com',
       role: 'manager',
       organizationId: 'org_cool_tech_001',
       organizationName: 'Cool Technologies LLC',
       avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
       designation: 'Operations Manager',
+    },
+  },
+  {
+    email: 'shibil@cooltechuae.com',
+    password: 'cool@123',
+    redirectUrl: '/manager/dashboard',
+    user: {
+      id: 'usr_manager_002',
+      name: 'muhammed Shibil',
+      email: 'shibil@cooltechuae.com',
+      role: 'manager',
+      organizationId: 'org_cool_tech_001',
+      organizationName: 'Cool Technologies LLC',
+      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
+      designation: 'Operations Manager',
+    },
+  },
+  {
+    email: 'employee@cooltechuae.com',
+    password: 'employee@123',
+    redirectUrl: '/worker/dashboard',
+    user: {
+      id: 'usr_employee_001',
+      name: 'Jordan Hayes',
+      email: 'employee@cooltechuae.com',
+      role: 'employee',
+      organizationId: 'org_cool_tech_001',
+      organizationName: 'Cool Technologies LLC',
+      avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150',
+      designation: 'Field Operations Specialist',
+    },
+  },
+  {
+    email: 'employee@gmail.com',
+    password: 'employee@123',
+    redirectUrl: '/worker/dashboard',
+    user: {
+      id: 'usr_employee_001',
+      name: 'Jordan Hayes',
+      email: 'employee@gmail.com',
+      role: 'employee',
+      organizationId: 'org_cool_tech_001',
+      organizationName: 'Cool Technologies LLC',
+      avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150',
+      designation: 'Field Operations Specialist',
     },
   },
   {
@@ -142,11 +187,11 @@ const MOCK_CREDENTIALS: Array<{
       id: 'usr_worker_001',
       name: 'Jordan Hayes',
       email: 'worker@cooltechuae.com',
-      role: 'worker',
+      role: 'employee',
       organizationId: 'org_cool_tech_001',
       organizationName: 'Cool Technologies LLC',
       avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150',
-      designation: 'HVAC Field Specialist',
+      designation: 'Field Operations Specialist',
     },
   },
   {
@@ -157,11 +202,11 @@ const MOCK_CREDENTIALS: Array<{
       id: 'usr_worker_001',
       name: 'Jordan Hayes',
       email: 'worker@gmail.com',
-      role: 'worker',
+      role: 'employee',
       organizationId: 'org_cool_tech_001',
       organizationName: 'Cool Technologies LLC',
       avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150',
-      designation: 'HVAC Field Specialist',
+      designation: 'Field Operations Specialist',
     },
   },
 ];
@@ -257,7 +302,7 @@ export const authMockService = {
               }
               const isAdm = userMatch.isAdmin || (userMatch.profileType && userMatch.profileType.toLowerCase().includes('admin'));
               const isMgr = userMatch.profileType && userMatch.profileType.toLowerCase().includes('manager');
-              const userRole: UserRole = isAdm ? 'admin' : isMgr ? 'manager' : 'worker';
+              const userRole: UserRole = isAdm ? 'admin' : isMgr ? 'manager' : 'employee';
               const mockUser: MockAuthUser = {
                 id: `usr_${userMatch.id}`,
                 name: userMatch.name,

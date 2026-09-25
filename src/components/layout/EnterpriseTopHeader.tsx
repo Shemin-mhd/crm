@@ -37,13 +37,29 @@ export function EnterpriseTopHeader() {
     }
   }, []);
 
-  const roles: UserRole[] = ['Super Admin', 'Admin', 'Operations Manager', 'Worker'];
+  const roles: UserRole[] = ['Super Admin', 'Admin', 'Manager', 'Employee'];
+
+  const getDisplayRole = (role?: string) => {
+    if (!role) return 'Admin';
+    const r = role.toLowerCase();
+    if (r === 'worker' || r === 'employee') return 'Employee';
+    if (r === 'manager' || r.includes('manager')) return 'Manager';
+    if (r.includes('super')) return 'Super Admin';
+    return 'Admin';
+  };
+
+  const isEmployeeUser = currentUser?.role === 'employee' || currentUser?.role === 'worker' || currentRole === 'Employee' || currentRole === 'Worker';
+  const homeHref = isEmployeeUser
+    ? '/worker/dashboard'
+    : currentUser?.role === 'manager'
+      ? '/manager/dashboard'
+      : '/dashboard';
 
   return (
     <div className="bg-white border-b border-[#E2E8F0] px-3 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between text-slate-800 z-40 relative w-full overflow-hidden sm:overflow-visible">
       {/* Brand Logo — icon + text */}
       <div className="flex items-center min-w-0 flex-shrink">
-        <Link href="/dashboard" className="flex items-center gap-2 group select-none min-w-0">
+        <Link href={homeHref} className="flex items-center gap-2 group select-none min-w-0">
 
           {/* Cool Technologies C-wave SVG icon */}
           <div className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-white border border-slate-100 shadow-sm flex items-center justify-center overflow-hidden group-hover:shadow-md transition-shadow">
@@ -190,7 +206,7 @@ export function EnterpriseTopHeader() {
                 {currentUser?.name || 'Cool Admin'}
               </span>
               <span className="text-[10px] text-[#1677FF] font-bold leading-tight capitalize">
-                {currentUser?.role || 'Admin'}
+                {getDisplayRole(currentUser?.role)}
               </span>
             </div>
             <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
@@ -204,18 +220,53 @@ export function EnterpriseTopHeader() {
                   <p className="text-xs font-bold text-slate-900">{currentUser?.name || 'Cool Admin'}</p>
                   <p className="text-[11px] text-slate-500 truncate">{currentUser?.email || 'cooladmin@gmail.com'}</p>
                   <span className="inline-block mt-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-blue-50 text-blue-700 border border-blue-200 uppercase">
-                    {currentUser?.role || 'Admin'}
+                    {getDisplayRole(currentUser?.role)}
                   </span>
                 </div>
 
                 <div className="pt-1 space-y-0.5">
-                  <Link
-                    href="/settings"
-                    onClick={() => setShowRoleDropdown(false)}
-                    className="block px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50 rounded-md transition-colors font-medium"
-                  >
-                    Organization Settings
-                  </Link>
+                  {isEmployeeUser ? (
+                    <>
+                      <Link
+                        href="/worker/dashboard"
+                        onClick={() => setShowRoleDropdown(false)}
+                        className="block px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50 rounded-md transition-colors font-medium"
+                      >
+                        Employee Dashboard
+                      </Link>
+                      <Link
+                        href="/worker/profile"
+                        onClick={() => setShowRoleDropdown(false)}
+                        className="block px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50 rounded-md transition-colors font-medium"
+                      >
+                        Employee Profile & Van
+                      </Link>
+                      <Link
+                        href="/worker/tasks"
+                        onClick={() => setShowRoleDropdown(false)}
+                        className="block px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50 rounded-md transition-colors font-medium"
+                      >
+                        My Tasks
+                      </Link>
+                    </>
+                  ) : (
+                    <>
+                      <Link
+                        href="/manager/dashboard"
+                        onClick={() => setShowRoleDropdown(false)}
+                        className="block px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50 rounded-md transition-colors font-medium"
+                      >
+                        Operations Manager Dashboard
+                      </Link>
+                      <Link
+                        href="/settings"
+                        onClick={() => setShowRoleDropdown(false)}
+                        className="block px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50 rounded-md transition-colors font-medium"
+                      >
+                        Organization Settings
+                      </Link>
+                    </>
+                  )}
                 </div>
 
                 <div className="border-t border-slate-100 pt-1 mt-1">

@@ -11,7 +11,7 @@
  * - DELETE /api/admins/:id
  */
 
-export type UserRole = 'super_admin' | 'admin' | 'manager' | 'worker';
+export type UserRole = 'super_admin' | 'admin' | 'manager' | 'employee' | 'worker';
 export type AdminStatus = 'Active' | 'Inactive';
 
 export interface AdminAccount {

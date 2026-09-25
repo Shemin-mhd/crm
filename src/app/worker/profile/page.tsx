@@ -23,8 +23,8 @@ export default function WorkerProfilePage() {
 
   return (
     <WorkerShell
-      title="Field Technician Profile &amp; Tool Asset Registry"
-      subtitle="Worker identification, skill certifications, assigned service vehicle, and safety credentials"
+      title="Employee Profile & Fleet Asset Registry"
+      subtitle="Employee credentials, skill certifications, assigned service vehicle, and safety clearances"
     >
       <div className="space-y-6">
         {/* ── SECTION 1: PROFILE HERO CARD ── */}

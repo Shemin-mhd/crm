@@ -61,6 +61,9 @@ import {
   Printer,
   Flag,
   Ban,
+  Mail,
+  MessageSquare,
+  Smartphone,
 } from 'lucide-react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { NavDropdownItem } from '@/config/enterprise-navigation';
@@ -118,6 +121,9 @@ const renderDropdownIcon = (name?: string, isHighlighted: boolean = false) => {
     case 'Printer': return <Printer className={iconClass} />;
     case 'Flag': return <Flag className={iconClass} />;
     case 'Ban': return <Ban className={iconClass} />;
+    case 'Mail': return <Mail className={iconClass} />;
+    case 'MessageSquare': return <MessageSquare className={iconClass} />;
+    case 'Smartphone': return <Smartphone className={iconClass} />;
     case 'TrendingUp': return <TrendingUp className={iconClass} />;
     case 'BarChart3': return <BarChart3 className={iconClass} />;
     case 'Sliders': return <Sliders className={iconClass} />;

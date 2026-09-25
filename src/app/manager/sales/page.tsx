@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import {
   Briefcase,
@@ -62,7 +62,7 @@ const MOCK_DEALS = [
   },
 ];
 
-export default function ManagerSalesPage() {
+function ManagerSalesContent() {
   const searchParams = useSearchParams();
   const activeTab = searchParams.get('tab') || 'opportunities';
   const [search, setSearch] = useState('');
@@ -161,5 +161,13 @@ export default function ManagerSalesPage() {
         </div>
       </div>
     </ManagerShell>
+  );
+}
+
+export default function ManagerSalesPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-xs text-slate-400">Loading Sales module...</div>}>
+      <ManagerSalesContent />
+    </Suspense>
   );
 }

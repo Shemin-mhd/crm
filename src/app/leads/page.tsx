@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useMemo, Suspense } from 'react';
+import React, { useState, useMemo, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
   ListChecks,
   Plus,
@@ -40,6 +41,28 @@ import { CrmLead, LeadRating, LeadStatus } from '@/types/enterprise-crm';
 import { cn } from '@/lib/utils';
 
 function LeadsContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Redirect legacy query parameters to dedicated pages
+  useEffect(() => {
+    const view = searchParams.get('view');
+    const action = searchParams.get('action');
+    const tab = searchParams.get('tab');
+
+    if (view === 'sources' || tab === 'sources') {
+      router.replace('/leads/sources');
+    } else if (view === 'status' || tab === 'status') {
+      router.replace('/leads/status');
+    } else if (view === 'followups' || tab === 'followups') {
+      router.replace('/leads/followups');
+    } else if (action === 'import' || view === 'import' || tab === 'import') {
+      router.replace('/leads/import');
+    } else if (view === 'reports' || tab === 'reports') {
+      router.replace('/leads/reports');
+    }
+  }, [searchParams, router]);
+
   const { leads, addLead, updateLead, deleteLead, addCustomer, addOpportunity, users, campaigns } =
     useEnterpriseCrm();
 
