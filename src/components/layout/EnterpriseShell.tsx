@@ -32,15 +32,8 @@ export function EnterpriseShell({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // Super Admin view is triggered ONLY when logged in as super_admin or on super-admin management routes
-  const isSuperAdminRoute =
-    pathname.startsWith('/super-admin') ||
-    pathname.startsWith('/organizations') ||
-    pathname.startsWith('/audit-logs') ||
-    pathname.startsWith('/configuration');
-
-  const isSuperAdminSession =
-    currentUser?.role === 'super_admin' || isSuperAdminRoute;
+  // Dedicated Super Admin management console is active only on /super-admin routes
+  const isSuperAdminSession = pathname.startsWith('/super-admin');
 
   return (
     <EnterpriseCrmProvider>
