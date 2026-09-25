@@ -133,11 +133,10 @@ export function SuperAdminHeader() {
                     <div
                       key={notif.id}
                       onClick={() => markNotificationAsRead(notif.id)}
-                      className={`p-2.5 rounded-xl cursor-pointer transition-colors ${
-                        notif.read
+                      className={`p-2.5 rounded-xl cursor-pointer transition-colors ${notif.read
                           ? 'bg-transparent text-slate-500'
                           : 'bg-indigo-50/50 dark:bg-indigo-950/30 text-slate-900 dark:text-slate-100'
-                      }`}
+                        }`}
                     >
                       <div className="flex items-start gap-2.5">
                         <div className="mt-0.5 flex-shrink-0">

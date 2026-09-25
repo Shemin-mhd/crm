@@ -38,6 +38,11 @@ export const SUPER_ADMIN_NAVIGATION: NavSection[] = [
         ],
       },
       {
+        title: 'Admin Management',
+        href: '/super-admin/admins',
+        iconName: 'ShieldCheck',
+      },
+      {
         title: 'Users',
         href: '/users',
         iconName: 'Users',

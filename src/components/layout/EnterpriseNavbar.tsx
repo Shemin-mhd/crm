@@ -35,11 +35,70 @@ const HEADER_ICONS: Record<string, (isActive: boolean) => React.ReactNode> = {
   Wrench: (active) => <Wrench className={cn('w-3.5 h-3.5 flex-shrink-0', active ? 'text-white' : 'text-[#2563EB]')} />,
 };
 
+const WORKER_NAV_ITEMS: EnterpriseNavItem[] = [
+  {
+    id: 'worker-dashboard',
+    label: 'Dashboard',
+    path: '/worker/dashboard',
+    iconName: 'Home',
+  },
+  {
+    id: 'worker-tasks',
+    label: 'My Tasks',
+    path: '/worker/tasks',
+    iconName: 'Wrench',
+    children: [
+      { label: "Today's Schedule", href: '/worker/tasks', iconName: 'CheckSquare' },
+      { label: 'Active Job (Live)', href: '/worker/tasks/active', iconName: 'Hourglass' },
+      { label: 'Pending Acceptance', href: '/worker/tasks?status=Pending', iconName: 'Hourglass' },
+      { label: 'Completed History', href: '/worker/tasks?status=Completed', iconName: 'FileText' },
+    ],
+  },
+  {
+    id: 'worker-active',
+    label: 'Live Job Pad',
+    path: '/worker/tasks/active',
+    iconName: 'Hourglass',
+    badge: 'LIVE',
+  },
+  {
+    id: 'worker-materials',
+    label: 'Materials',
+    path: '/worker/materials',
+    iconName: 'Package',
+    children: [
+      { label: 'My Requisitions', href: '/worker/materials', iconName: 'Package' },
+      { label: '+ New Requisition', href: '/worker/materials?action=new', iconName: 'Package' },
+    ],
+  },
+  {
+    id: 'worker-timesheet',
+    label: 'Timesheet',
+    path: '/worker/timesheet',
+    iconName: 'CheckSquare',
+  },
+  {
+    id: 'worker-reports',
+    label: 'Service Reports',
+    path: '/worker/reports',
+    iconName: 'FileText',
+  },
+  {
+    id: 'worker-profile',
+    label: 'Profile & Van',
+    path: '/worker/profile',
+    iconName: 'Shield',
+  },
+];
+
 export function EnterpriseNavbar() {
   const pathname = usePathname();
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navContainerRef = useRef<HTMLDivElement>(null);
+
+  const isWorkerPath = pathname.startsWith('/worker');
+  const activeNavItems = isWorkerPath ? WORKER_NAV_ITEMS : ENTERPRISE_NAV_ITEMS;
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -85,7 +144,7 @@ export function EnterpriseNavbar() {
       <div className="flex items-center justify-between h-10">
         {/* Desktop Horizontal Menu */}
         <div className="hidden md:flex items-center h-10 overflow-visible">
-          {ENTERPRISE_NAV_ITEMS.map((item) => {
+          {activeNavItems.map((item) => {
             const hasChildren = !!(item.children && item.children.length > 0);
             const isMenuOpen = activeMenu === item.id;
             const isRouteActive =
@@ -166,7 +225,7 @@ export function EnterpriseNavbar() {
           <div className="flex items-center gap-2 min-w-0">
             <span className="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0" />
             <span className="text-xs font-bold text-slate-800 truncate">
-              {ENTERPRISE_NAV_ITEMS.find(
+              {activeNavItems.find(
                 (i) => i.path === pathname || (i.id !== 'dashboard' && pathname.startsWith(`/${i.id}`))
               )?.label || 'Navigation'}
             </span>
@@ -209,7 +268,7 @@ export function EnterpriseNavbar() {
 
             {/* Nav Items List */}
             <div className="flex-1 overflow-y-auto p-3 space-y-1 bg-slate-50/50">
-              {ENTERPRISE_NAV_ITEMS.map((item) => {
+              {activeNavItems.map((item) => {
                 const hasChildren = !!(item.children && item.children.length > 0);
                 const isMenuOpen = activeMenu === item.id;
                 const isRouteActive =

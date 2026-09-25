@@ -68,6 +68,7 @@ import {
 } from 'lucide-react';
 
 import { useEnterpriseCrm } from '@/context/EnterpriseCrmContext';
+import { authMockService } from '@/services/authMockService';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { BackButton } from '@/components/ui/BackButton';
@@ -81,6 +82,7 @@ export type CezconUserItem = {
   name: string;
   email: string;
   username: string;
+  password?: string;
   profileType: string;
   isAdmin: boolean;
   hasTarget: boolean;
@@ -110,17 +112,19 @@ export type CezconUserItem = {
 // ── Cezcon CRM Users Data (Empty initial list for real user data entry) ─────────────
 const CEZCON_USERS_DATA: CezconUserItem[] = [];
 
-// ── Cezcon CRM Profiles Data (Exact Reference) ──────────────────────────────
+// ── Cezcon CRM Profiles Data (Admin, Manager, Worker & Operational Profiles) ──
 const CEZCON_PROFILES_DATA = [
-  { id: 1, name: 'Sales', date: '30-04-2026', sales: true, project: true },
-  { id: 2, name: 'Digital Marketing', date: '24-04-2026', sales: true, project: true },
-  { id: 3, name: 'Finance', date: '30-07-2025', sales: true, project: true },
-  { id: 4, name: 'IM', date: '30-07-2025', sales: true, project: true },
-  { id: 5, name: 'Operations', date: '30-07-2025', sales: true, project: true },
-  { id: 6, name: 'Sales Manager', date: '16-04-2026', sales: true, project: true },
-  { id: 7, name: 'Service Supervisor', date: '30-07-2025', sales: true, project: true },
-  { id: 8, name: 'Technician', date: '30-07-2025', sales: true, project: true },
-  { id: 9, name: 'ADMIN USER', date: '15-01-2025', sales: true, project: true },
+  { id: 1, name: 'Admin', date: '01-01-2026', sales: true, project: true },
+  { id: 2, name: 'Manager', date: '01-01-2026', sales: true, project: true },
+  { id: 3, name: 'Worker', date: '01-01-2026', sales: false, project: true },
+  { id: 4, name: 'Sales Manager', date: '16-04-2026', sales: true, project: true },
+  { id: 5, name: 'Operations Manager', date: '30-07-2025', sales: true, project: true },
+  { id: 6, name: 'Finance Controller', date: '30-07-2025', sales: true, project: true },
+  { id: 7, name: 'Sales Executive', date: '30-04-2026', sales: true, project: true },
+  { id: 8, name: 'Digital Marketing', date: '24-04-2026', sales: true, project: true },
+  { id: 9, name: 'Service Supervisor', date: '30-07-2025', sales: true, project: true },
+  { id: 10, name: 'Technician', date: '30-07-2025', sales: true, project: true },
+  { id: 11, name: 'IM / Logistics', date: '30-07-2025', sales: true, project: true },
 ];
 
 // ── Cezcon CRM Opportunity Stages Data (Exact Reference) ───────────────────
@@ -318,15 +322,18 @@ const CEZCON_REGIONS_DATA = [
   { id: 6, name: 'Bahrain', currency: 'BHD (.د.ب)', code: 'BHR / +973', taxRate: '10%', status: 'Active' },
 ];
 
-// ── Cezcon CRM Designation Data (Exact Reference) ──────────────────────────
+// ── Cezcon CRM Designation Data (Admin, Manager, Worker & Operational Staff) ───
 const CEZCON_DESIGNATIONS_DATA = [
-  { id: 1, name: 'Managing Director', department: 'Executive Management', count: 1 },
-  { id: 2, name: 'Sales Manager', department: 'Sales & Business Dev', count: 3 },
-  { id: 3, name: 'HVAC Project Engineer', department: 'Engineering & Operations', count: 5 },
-  { id: 4, name: 'Senior HVAC Technician', department: 'Technical Field Services', count: 8 },
-  { id: 5, name: 'Finance Controller', department: 'Finance & Accounts', count: 2 },
-  { id: 6, name: 'Operations Executive', department: 'Logistics & Warehouse', count: 4 },
-  { id: 7, name: 'Digital Marketing Specialist', department: 'Marketing', count: 1 },
+  { id: 1, name: 'Admin', department: 'Administration', count: 1 },
+  { id: 2, name: 'Manager', department: 'Management & Operations', count: 2 },
+  { id: 3, name: 'Worker', department: 'Field Services', count: 5 },
+  { id: 4, name: 'Sales Manager', department: 'Sales & Business Dev', count: 3 },
+  { id: 5, name: 'Operations Manager', department: 'Operations & Logistics', count: 2 },
+  { id: 6, name: 'Finance Controller', department: 'Finance & Accounts', count: 2 },
+  { id: 7, name: 'HVAC Project Engineer', department: 'Engineering & Operations', count: 5 },
+  { id: 8, name: 'Senior HVAC Technician', department: 'Technical Field Services', count: 8 },
+  { id: 9, name: 'Operations Executive', department: 'Logistics & Warehouse', count: 4 },
+  { id: 10, name: 'Digital Marketing Specialist', department: 'Marketing', count: 1 },
 ];
 
 // ── Cezcon CRM Campaign Settings Data (Exact Reference) ───────────────────
@@ -479,13 +486,83 @@ function SettingsContent() {
   const [profileDropdownSearch, setProfileDropdownSearch] = useState('');
   const profileDropdownRef = React.useRef<HTMLDivElement>(null);
 
+  const loggedInUser = authMockService.getCurrentUser();
+  const isManagerSession = loggedInUser?.role === 'manager';
+  const isAdminSession = loggedInUser?.role === 'admin';
+  const isSuperAdminSession = loggedInUser?.role === 'super_admin';
+
+  const displayProfiles = React.useMemo(() => {
+    // 1. Manager Access Policy: Can ONLY create/assign Worker, Technician, Operations Staff
+    if (isManagerSession) {
+      return [
+        { id: 103, name: 'Worker', date: '01-01-2026', sales: false, project: true },
+        { id: 104, name: 'Technician', date: '01-01-2026', sales: false, project: true },
+        { id: 105, name: 'Service Supervisor', date: '01-01-2026', sales: true, project: true },
+        { id: 106, name: 'Operations Executive', date: '01-01-2026', sales: true, project: true },
+        { id: 107, name: 'IM / Logistics', date: '01-01-2026', sales: true, project: true },
+      ];
+    }
+
+    // 2. Admin Access Policy: Can create Manager, Worker, and Staff, but NOT Admin or Super Admin
+    if (isAdminSession) {
+      return [
+        { id: 102, name: 'Manager', date: '01-01-2026', sales: true, project: true },
+        { id: 103, name: 'Worker', date: '01-01-2026', sales: false, project: true },
+        { id: 104, name: 'Operations Manager', date: '01-01-2026', sales: true, project: true },
+        { id: 105, name: 'Sales Manager', date: '16-04-2026', sales: true, project: true },
+        { id: 106, name: 'Finance Controller', date: '30-07-2025', sales: true, project: true },
+        { id: 107, name: 'Sales Executive', date: '30-04-2026', sales: true, project: true },
+        { id: 108, name: 'Digital Marketing', date: '24-04-2026', sales: true, project: true },
+        { id: 109, name: 'Service Supervisor', date: '30-07-2025', sales: true, project: true },
+        { id: 110, name: 'Technician', date: '30-07-2025', sales: true, project: true },
+        { id: 111, name: 'IM / Logistics', date: '30-07-2025', sales: true, project: true },
+      ];
+    }
+
+    // 3. Super Admin: Platform wide access
+    const required = [
+      { id: 101, name: 'Admin', date: '01-01-2026', sales: true, project: true },
+      { id: 102, name: 'Manager', date: '01-01-2026', sales: true, project: true },
+      { id: 103, name: 'Worker', date: '01-01-2026', sales: false, project: true },
+    ];
+    const map = new Map<string, any>();
+    required.forEach((r) => map.set(r.name.toLowerCase(), r));
+    (profilesList || []).forEach((p: any) => {
+      if (!map.has(p.name.toLowerCase())) {
+        map.set(p.name.toLowerCase(), p);
+      }
+    });
+    const all = Array.from(map.values());
+    const priority = ['admin', 'manager', 'worker'];
+    return all.sort((a: any, b: any) => {
+      const aIdx = priority.indexOf(a.name.toLowerCase());
+      const bIdx = priority.indexOf(b.name.toLowerCase());
+      if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx;
+      if (aIdx !== -1) return -1;
+      if (bIdx !== -1) return 1;
+      return 0;
+    });
+  }, [profilesList, isManagerSession, isAdminSession]);
+
   useEffect(() => {
     try {
       const saved = localStorage.getItem('cezcon_crm_profiles_list');
-      if (saved) setProfilesList(JSON.parse(saved));
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          // Ensure Admin, Manager, Worker exist in the list
+          const required = ['Admin', 'Manager', 'Worker'];
+          const existingNames = new Set(parsed.map((p: any) => p.name));
+          const missing = CEZCON_PROFILES_DATA.filter((p) => !existingNames.has(p.name));
+          const merged = [...CEZCON_PROFILES_DATA.filter((p) => required.includes(p.name)), ...parsed.filter((p: any) => !required.includes(p.name)), ...missing.filter((p) => !required.includes(p.name))];
+          setProfilesList(merged);
+          return;
+        }
+      }
     } catch (e) {
       console.error(e);
     }
+    setProfilesList(CEZCON_PROFILES_DATA);
   }, []);
 
   useEffect(() => {
@@ -497,6 +574,8 @@ function SettingsContent() {
   }, [profilesList]);
   const [openActionUserId, setOpenActionUserId] = useState<number | null>(null);
   const [viewUserModalData, setViewUserModalData] = useState<CezconUserItem | null>(null);
+  const [userToDelete, setUserToDelete] = useState<CezconUserItem | null>(null);
+  const [isDeleteUserModalOpen, setIsDeleteUserModalOpen] = useState(false);
   const [assignWorkerUser, setAssignWorkerUser] = useState<CezconUserItem | null>(null);
   const [assignWorkerTab, setAssignWorkerTab] = useState<'NEW' | 'EXISTING'>('NEW');
   const [workerFormData, setWorkerFormData] = useState({
@@ -672,13 +751,77 @@ function SettingsContent() {
 
   const [designationsLoaded, setDesignationsLoaded] = useState(false);
 
+  const displayDesignations = React.useMemo(() => {
+    // 1. Manager Access Policy: Can ONLY assign Worker, Field Technicians, Operations Staff
+    if (isManagerSession) {
+      return [
+        { id: 203, name: 'Worker', department: 'Field Services', count: 5 },
+        { id: 204, name: 'HVAC Project Engineer', department: 'Engineering & Operations', count: 5 },
+        { id: 205, name: 'Senior HVAC Technician', department: 'Technical Field Services', count: 8 },
+        { id: 206, name: 'Operations Executive', department: 'Logistics & Warehouse', count: 4 },
+        { id: 207, name: 'Service Supervisor', department: 'Field Services', count: 3 },
+      ];
+    }
+
+    // 2. Admin Access Policy: Can assign Manager, Worker, and Staff, but NOT Admin or Super Admin
+    if (isAdminSession) {
+      return [
+        { id: 202, name: 'Manager', department: 'Management & Operations', count: 2 },
+        { id: 203, name: 'Worker', department: 'Field Services', count: 5 },
+        { id: 204, name: 'Sales Manager', department: 'Sales & Business Dev', count: 3 },
+        { id: 205, name: 'Operations Manager', department: 'Operations & Logistics', count: 2 },
+        { id: 206, name: 'Finance Controller', department: 'Finance & Accounts', count: 2 },
+        { id: 207, name: 'HVAC Project Engineer', department: 'Engineering & Operations', count: 5 },
+        { id: 208, name: 'Senior HVAC Technician', department: 'Technical Field Services', count: 8 },
+        { id: 209, name: 'Operations Executive', department: 'Logistics & Warehouse', count: 4 },
+        { id: 210, name: 'Digital Marketing Specialist', department: 'Marketing', count: 1 },
+      ];
+    }
+
+    // 3. Super Admin: Platform wide access
+    const required = [
+      { id: 201, name: 'Admin', department: 'Administration', count: 1 },
+      { id: 202, name: 'Manager', department: 'Management & Operations', count: 2 },
+      { id: 203, name: 'Worker', department: 'Field Services', count: 5 },
+    ];
+    const map = new Map<string, any>();
+    required.forEach((r) => map.set(r.name.toLowerCase(), r));
+    (designationsList || []).forEach((d: any) => {
+      if (!map.has(d.name.toLowerCase())) {
+        map.set(d.name.toLowerCase(), d);
+      }
+    });
+    const all = Array.from(map.values());
+    const priority = ['admin', 'manager', 'worker'];
+    return all.sort((a: any, b: any) => {
+      const aIdx = priority.indexOf(a.name.toLowerCase());
+      const bIdx = priority.indexOf(b.name.toLowerCase());
+      if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx;
+      if (aIdx !== -1) return -1;
+      if (bIdx !== -1) return 1;
+      return 0;
+    });
+  }, [designationsList, isManagerSession, isAdminSession]);
+
   useEffect(() => {
     try {
       const saved = localStorage.getItem('cezcon_crm_designations_list');
-      if (saved) setDesignationsList(JSON.parse(saved));
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const required = ['Admin', 'Manager', 'Worker'];
+          const existingNames = new Set(parsed.map((d: any) => d.name));
+          const missing = CEZCON_DESIGNATIONS_DATA.filter((d) => !existingNames.has(d.name));
+          const merged = [...CEZCON_DESIGNATIONS_DATA.filter((d) => required.includes(d.name)), ...parsed.filter((d: any) => !required.includes(d.name)), ...missing.filter((d) => !required.includes(d.name))];
+          setDesignationsList(merged);
+          setDesignationsLoaded(true);
+          return;
+        }
+      }
     } catch (e) {
       console.error(e);
     }
+    setDesignationsList(CEZCON_DESIGNATIONS_DATA);
     setDesignationsLoaded(true);
   }, []);
 
@@ -748,6 +891,30 @@ function SettingsContent() {
   );
 
   const filteredCezconUsers = cezconUsersList.filter((u) => {
+    // 1. Manager Access Scope: Only view Workers, Technicians, Service Staff (Hide Admins, Super Admins, and peer Managers)
+    if (isManagerSession) {
+      const isPrivilegedOrAdmin =
+        u.isAdmin ||
+        u.profileType.toLowerCase().includes('admin') ||
+        u.profileType.toLowerCase().includes('super') ||
+        u.profileType.toLowerCase() === 'manager' ||
+        u.profileType.toLowerCase() === 'operations manager' ||
+        u.profileType.toLowerCase() === 'sales manager' ||
+        u.profileType.toLowerCase() === 'finance controller';
+
+      if (isPrivilegedOrAdmin) {
+        return false;
+      }
+    }
+
+    // 2. Admin Access Scope: Can view Admins, Managers, Supervisors, Workers, Staff (Hide Super Admin platform tier)
+    if (isAdminSession) {
+      const isSuper = u.profileType.toLowerCase().includes('super');
+      if (isSuper) {
+        return false;
+      }
+    }
+
     const matchesStatus = userStatusFilter === 'All' || u.status === userStatusFilter;
     const matchesProfile =
       userProfileFilter === 'All' ||
@@ -946,46 +1113,69 @@ function SettingsContent() {
 
     const fullUsername = `${userFormData.username.trim()}@cooltechuae.com`;
     const userEmail = userFormData.email.trim() || fullUsername;
-    const profileName = userFormData.profile || 'ADMIN USER';
-    const isAdmin = profileName === 'ADMIN USER';
+    const profileName = userFormData.profile || 'Manager';
+    const isAdminUser = profileName.toLowerCase().includes('admin');
+    const isManager = profileName.toLowerCase().includes('manager') || (userFormData.designation && userFormData.designation.toLowerCase().includes('manager'));
+    const isWorker = userFormData.isWorker || profileName.toLowerCase().includes('technician') || profileName.toLowerCase().includes('worker');
 
     const newUser: CezconUserItem = {
       id: Date.now(),
       name: userFormData.name.trim(),
       email: userEmail,
       username: fullUsername,
+      password: userFormData.password.trim(),
       profileType: profileName,
-      isAdmin,
+      isAdmin: isAdminUser,
       hasTarget: userFormData.monthlyTargets,
       salesPermission: 'All',
       projectPermission: 'All',
       status: 'Active',
-      avatarBg: 'bg-blue-600',
+      avatarBg: isAdminUser ? 'bg-indigo-600' : isManager ? 'bg-blue-600' : 'bg-emerald-600',
       phone: userFormData.mobileNumber ? `${userFormData.mobileCountry} ${userFormData.mobileNumber}` : '+971 55 485 3829',
       dob: userFormData.dob || '20-05-1968',
-      designation: userFormData.designation || (isAdmin ? 'COO' : 'Sales Executive'),
+      designation: userFormData.designation || (isAdminUser ? 'Admin' : isManager ? 'Manager' : 'Worker'),
       businessOpportunity: userFormData.businessOpportunity || 'All Works',
       salesVisitPermission: userFormData.salesVisitPermission ?? true,
       store: userFormData.store || 'All Stores',
       avatarImage: userFormData.avatarImage,
       signatureImage: userFormData.signatureImage,
       loginPermission: userFormData.loginPermission || 'Web & Mobile',
-      isWorker: userFormData.isWorker,
+      isWorker,
     };
 
     const updated = [newUser, ...cezconUsersList];
     setCezconUsersList(updated);
     try {
       localStorage.setItem('cezcon_crm_users_list', JSON.stringify(updated));
+      if (isAdminUser) {
+        const storedAdmins = JSON.parse(localStorage.getItem('crm_admin_accounts_list') || '[]');
+        const newAdminRecord = {
+          id: `adm_${Date.now()}`,
+          name: userFormData.name.trim(),
+          email: userEmail,
+          username: userFormData.username.trim(),
+          password: userFormData.password.trim(),
+          phone: userFormData.mobileNumber ? `${userFormData.mobileCountry} ${userFormData.mobileNumber}` : '+971 55 485 3829',
+          role: 'Admin',
+          organizationId: 'org_cool_tech_001',
+          organizationName: 'Cool Technologies LLC',
+          status: 'Active',
+          designation: userFormData.designation || 'Admin',
+          department: 'Administration',
+          createdAt: new Date().toISOString().split('T')[0],
+          updatedAt: new Date().toISOString().split('T')[0],
+        };
+        localStorage.setItem('crm_admin_accounts_list', JSON.stringify([newAdminRecord, ...storedAdmins]));
+      }
     } catch (e) {
       console.error(e);
     }
     addUser({
       name: userFormData.name.trim(),
       email: userEmail,
-      role: isAdmin ? 'Admin' : (userFormData.isWorker ? 'Worker' : 'Worker'),
+      role: (isAdminUser ? 'Admin' : isManager ? 'Manager' : isWorker ? 'Worker' : profileName) as any,
       phone: `${userFormData.mobileCountry} ${userFormData.mobileNumber}`,
-      department: userFormData.designation || 'Operations',
+      department: userFormData.designation || (isAdminUser ? 'Administration' : isManager ? 'Management' : 'Operations'),
       status: 'Active',
     });
 
@@ -1314,7 +1504,17 @@ function SettingsContent() {
               <div className="flex items-center justify-between px-4 py-2 bg-[#F1F5F9] border-b border-slate-200">
                 <div className="flex items-center gap-2 font-bold text-xs text-slate-800">
                   <User className="w-4 h-4 text-slate-700" />
-                  <span>Add User</span>
+                  <span>{isManagerSession ? 'Add Team Member / Worker' : isSuperAdminSession ? 'Add System User' : 'Add User'}</span>
+                  {isManagerSession && (
+                    <span className="text-[10px] font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+                      Manager Access: Worker &amp; Department Staff Only
+                    </span>
+                  )}
+                  {isAdminSession && (
+                    <span className="text-[10px] font-semibold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200">
+                      Admin Access: Manager &amp; Staff
+                    </span>
+                  )}
                 </div>
                 <button
                   type="button"
@@ -1576,27 +1776,28 @@ function SettingsContent() {
                               >
                                 Select Profile
                               </div>
-                              {profilesList
+                              {displayProfiles
                                 .filter((p) => p.name.toLowerCase().includes(profileDropdownSearch.toLowerCase()))
                                 .map((p) => {
                                   const isSelected = userFormData.profile === p.name;
                                   return (
                                     <div
-                                      key={p.id}
+                                      key={p.id || p.name}
                                       onClick={() => {
                                         setUserFormData({ ...userFormData, profile: p.name });
                                         setIsProfileDropdownOpen(false);
                                       }}
-                                      className={`px-3 py-1.5 cursor-pointer transition-colors ${isSelected
+                                      className={`px-3 py-1.5 cursor-pointer transition-colors ${
+                                        isSelected
                                           ? 'bg-blue-600 text-white font-medium'
                                           : 'hover:bg-blue-600 hover:text-white text-slate-800'
-                                        }`}
+                                      }`}
                                     >
                                       {p.name}
                                     </div>
                                   );
                                 })}
-                              {profilesList.filter((p) => p.name.toLowerCase().includes(profileDropdownSearch.toLowerCase())).length === 0 && (
+                              {displayProfiles.filter((p) => p.name.toLowerCase().includes(profileDropdownSearch.toLowerCase())).length === 0 && (
                                 <div className="px-3 py-2 text-center text-[11px] text-slate-400">
                                   No matching profiles
                                 </div>
@@ -1655,8 +1856,8 @@ function SettingsContent() {
                           className="w-full bg-white border border-[#CBD5E1] rounded px-2.5 py-1 text-xs text-slate-800 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                         >
                           <option value="">Select</option>
-                          {designationsList.map((d) => (
-                            <option key={d.id} value={d.name}>
+                          {displayDesignations.map((d) => (
+                            <option key={d.id || d.name} value={d.name}>
                               {d.name}
                             </option>
                           ))}
@@ -1860,11 +2061,38 @@ function SettingsContent() {
                     className="bg-slate-50 border border-slate-200 rounded px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-blue-600 min-w-[140px]"
                   >
                     <option value="All">All</option>
-                    <option value="ADMIN USER">ADMIN USER</option>
-                    <option value="Sales">Sales</option>
-                    <option value="Finance">Finance</option>
-                    <option value="Operations">Operations</option>
-                    <option value="Worker">Worker</option>
+                    {isManagerSession ? (
+                      <>
+                        <option value="Worker">Worker</option>
+                        <option value="Technician">Technician</option>
+                        <option value="Service Supervisor">Service Supervisor</option>
+                        <option value="Operations Executive">Operations Executive</option>
+                        <option value="IM / Logistics">IM / Logistics</option>
+                      </>
+                    ) : isAdminSession ? (
+                      <>
+                        <option value="ADMIN USER">ADMIN USER</option>
+                        <option value="Manager">Manager</option>
+                        <option value="Operations Manager">Operations Manager</option>
+                        <option value="Sales Manager">Sales Manager</option>
+                        <option value="Supervisor">Supervisor</option>
+                        <option value="Worker">Worker</option>
+                        <option value="Technician">Technician</option>
+                        <option value="Sales">Sales</option>
+                        <option value="Finance">Finance</option>
+                        <option value="Operations">Operations</option>
+                      </>
+                    ) : (
+                      <>
+                        <option value="ADMIN USER">ADMIN USER</option>
+                        <option value="Manager">Manager</option>
+                        <option value="Sales">Sales</option>
+                        <option value="Finance">Finance</option>
+                        <option value="Operations">Operations</option>
+                        <option value="Worker">Worker</option>
+                        <option value="Technician">Technician</option>
+                      </>
+                    )}
                   </select>
                 </div>
               </div>
@@ -1875,15 +2103,30 @@ function SettingsContent() {
                 <div className="flex items-center justify-between px-4 py-2.5 bg-[#F1F5F9] border-b border-slate-200">
                   <div className="flex items-center gap-2 font-bold text-xs text-slate-800">
                     <Users className="w-4 h-4 text-slate-600" />
-                    <span>Active User</span>
+                    <span>{isManagerSession ? 'Department Workers & Technicians' : isAdminSession ? 'Active Organization Users' : 'Active Users'}</span>
+                    {isManagerSession && (
+                      <span className="text-[10px] font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+                        Manager Scope: Workers Only
+                      </span>
+                    )}
                   </div>
                   <button
                     type="button"
-                    onClick={() => setIsAddUserModalOpen(true)}
+                    onClick={() => {
+                      if (isManagerSession) {
+                        setUserFormData((prev) => ({
+                          ...prev,
+                          profile: 'Worker',
+                          isWorker: true,
+                          designation: 'Worker',
+                        }));
+                      }
+                      setIsAddUserModalOpen(true);
+                    }}
                     className="inline-flex items-center gap-1 px-3 py-1 rounded bg-[#16A34A] hover:bg-[#15803D] text-white text-xs font-bold shadow-xs transition-colors cursor-pointer"
                   >
                     <Plus className="w-3.5 h-3.5" />
-                    + USER
+                    {isManagerSession ? '+ WORKER' : '+ USER'}
                   </button>
                 </div>
 
@@ -2020,6 +2263,18 @@ function SettingsContent() {
                                   <Users className="w-4 h-4 text-slate-700 stroke-[1.75]" />
                                   <span>Make Worker</span>
                                 </button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setOpenActionUserId(null);
+                                    setUserToDelete(u);
+                                    setIsDeleteUserModalOpen(true);
+                                  }}
+                                  className="w-full text-left px-3 py-1.5 flex items-center gap-2.5 rounded-sm hover:bg-rose-50 text-[13px] text-rose-600 transition-colors cursor-pointer border-t border-slate-100 mt-1 pt-1.5"
+                                >
+                                  <Trash2 className="w-4 h-4 text-rose-500 stroke-[1.75]" />
+                                  <span>Delete</span>
+                                </button>
                               </div>
                             )}
                           </div>
@@ -2030,7 +2285,7 @@ function SettingsContent() {
                 </div>
 
                 {/* Table (Desktop Viewports) */}
-                <div className="hidden md:block overflow-x-auto min-h-[220px]">
+                <div className="hidden md:block overflow-x-auto pb-16 min-h-[260px]">
                   <table className="w-full text-left text-xs border-collapse">
                     <thead className="bg-[#F8FAFC] border-b border-slate-200 text-slate-700 font-semibold text-[11px]">
                       <tr>
@@ -2178,49 +2433,64 @@ function SettingsContent() {
                                 </button>
 
                                 {openActionUserId === u.id && (
-                                  <div className="absolute right-0 top-full mt-1.5 w-44 bg-white border border-[#CBD5E1]/80 rounded-md shadow-lg z-50 py-1.5 px-1 animate-in fade-in duration-100 space-y-0.5">
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        setOpenActionUserId(null);
-                                        window.open(`/settings?tab=users&userId=${u.id}`, '_blank');
-                                      }}
-                                      className="w-full text-left px-3 py-1.5 flex items-center gap-2.5 rounded-sm hover:bg-slate-100/80 text-[13px] text-slate-800 transition-colors cursor-pointer"
-                                    >
-                                      <Book className="w-4 h-4 text-slate-700 stroke-[1.75]" />
-                                      <span>Open in new tab</span>
-                                    </button>
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        setOpenActionUserId(null);
-                                        setViewUserModalData(u);
-                                      }}
-                                      className="w-full text-left px-3 py-1.5 flex items-center gap-2.5 rounded-sm hover:bg-slate-100/80 text-[13px] text-slate-800 transition-colors cursor-pointer"
-                                    >
-                                      <Book className="w-4 h-4 text-slate-700 stroke-[1.75]" />
-                                      <span>View</span>
-                                    </button>
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        setOpenActionUserId(null);
-                                        setAssignWorkerUser(u);
-                                        setAssignWorkerTab('NEW');
-                                        setWorkerFormData({
-                                          workerCode: u.workerCode || `WRK-${String(u.id).slice(-4)}`,
-                                          grade: u.grade || 'Select',
-                                          hourlyRate: u.hourlyRate || '',
-                                          joiningDate: u.joiningDate || new Date().toLocaleDateString('en-GB').replace(/\//g, '-'),
-                                          existingWorker: '',
-                                        });
-                                      }}
-                                      className="w-full text-left px-3 py-1.5 flex items-center gap-2.5 rounded-sm hover:bg-slate-100/80 text-[13px] text-slate-800 transition-colors cursor-pointer"
-                                    >
-                                      <Users className="w-4 h-4 text-slate-700 stroke-[1.75]" />
-                                      <span>Make Worker</span>
-                                    </button>
-                                  </div>
+                                  <>
+                                    <div className="fixed inset-0 z-40" onClick={() => setOpenActionUserId(null)} />
+                                    <div className={`absolute right-0 ${idx >= filteredCezconUsers.length - 2 && filteredCezconUsers.length > 2 ? 'bottom-full mb-1.5' : 'top-full mt-1.5'} w-44 bg-white border border-[#CBD5E1]/80 rounded-md shadow-xl z-50 py-1.5 px-1 animate-in fade-in duration-100 space-y-0.5`}>
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          setOpenActionUserId(null);
+                                          window.open(`/settings?tab=users&userId=${u.id}`, '_blank');
+                                        }}
+                                        className="w-full text-left px-3 py-1.5 flex items-center gap-2.5 rounded-sm hover:bg-slate-100/80 text-[13px] text-slate-800 transition-colors cursor-pointer"
+                                      >
+                                        <Book className="w-4 h-4 text-slate-700 stroke-[1.75]" />
+                                        <span>Open in new tab</span>
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          setOpenActionUserId(null);
+                                          setViewUserModalData(u);
+                                        }}
+                                        className="w-full text-left px-3 py-1.5 flex items-center gap-2.5 rounded-sm hover:bg-slate-100/80 text-[13px] text-slate-800 transition-colors cursor-pointer"
+                                      >
+                                        <Book className="w-4 h-4 text-slate-700 stroke-[1.75]" />
+                                        <span>View</span>
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          setOpenActionUserId(null);
+                                          setAssignWorkerUser(u);
+                                          setAssignWorkerTab('NEW');
+                                          setWorkerFormData({
+                                            workerCode: u.workerCode || `WRK-${String(u.id).slice(-4)}`,
+                                            grade: u.grade || 'Select',
+                                            hourlyRate: u.hourlyRate || '',
+                                            joiningDate: u.joiningDate || new Date().toLocaleDateString('en-GB').replace(/\//g, '-'),
+                                            existingWorker: '',
+                                          });
+                                        }}
+                                        className="w-full text-left px-3 py-1.5 flex items-center gap-2.5 rounded-sm hover:bg-slate-100/80 text-[13px] text-slate-800 transition-colors cursor-pointer"
+                                      >
+                                        <Users className="w-4 h-4 text-slate-700 stroke-[1.75]" />
+                                        <span>Make Worker</span>
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          setOpenActionUserId(null);
+                                          setUserToDelete(u);
+                                          setIsDeleteUserModalOpen(true);
+                                        }}
+                                        className="w-full text-left px-3 py-1.5 flex items-center gap-2.5 rounded-sm hover:bg-rose-50 text-[13px] text-rose-600 transition-colors cursor-pointer border-t border-slate-100 mt-1 pt-1.5"
+                                      >
+                                        <Trash2 className="w-4 h-4 text-rose-500 stroke-[1.75]" />
+                                        <span>Delete</span>
+                                      </button>
+                                    </div>
+                                  </>
                                 )}
                               </div>
                             </td>
@@ -6100,6 +6370,64 @@ function SettingsContent() {
             </Button>
           </div>
         </form>
+      </Modal>
+
+      {/* ── Delete User Confirmation Modal ────────────────────────────────────── */}
+      <Modal
+        isOpen={isDeleteUserModalOpen}
+        onClose={() => {
+          setIsDeleteUserModalOpen(false);
+          setUserToDelete(null);
+        }}
+        title="Delete User Record"
+        description="Permanently remove this user record from the system."
+      >
+        <div className="space-y-4 text-xs">
+          <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-md text-rose-800 flex items-start gap-2.5">
+            <Trash2 className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+            <div>
+              <p className="font-semibold text-[13px]">Are you sure you want to delete this user?</p>
+              <p className="text-rose-600 mt-1">
+                You are about to permanently remove <span className="font-bold">{userToDelete?.name}</span> ({userToDelete?.email || userToDelete?.username}). This action cannot be undone.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setIsDeleteUserModalOpen(false);
+                setUserToDelete(null);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              variant="danger"
+              size="sm"
+              onClick={() => {
+                if (!userToDelete) return;
+                const updated = cezconUsersList.filter((usr) => usr.id !== userToDelete.id);
+                setCezconUsersList(updated);
+                try {
+                  localStorage.setItem('cezcon_crm_users_list', JSON.stringify(updated));
+                } catch (err) {
+                  console.error(err);
+                }
+                setIsDeleteUserModalOpen(false);
+                setUserToDelete(null);
+                setSaveSuccess(true);
+                setTimeout(() => setSaveSuccess(false), 3000);
+              }}
+            >
+              Delete User
+            </Button>
+          </div>
+        </div>
       </Modal>
 
     </div>

@@ -11,12 +11,31 @@ import {
 } from 'lucide-react';
 import { useEnterpriseCrm } from '@/context/EnterpriseCrmContext';
 import { UserRole } from '@/types/enterprise-crm';
+import { authMockService, MockAuthUser } from '@/services/authMockService';
 
 export function EnterpriseTopHeader() {
   const { currentRole, setCurrentRole, globalSearch, setGlobalSearch } = useEnterpriseCrm();
   const [showRoleDropdown, setShowRoleDropdown] = useState(false);
   const [showQuickAdd, setShowQuickAdd] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [currentUser, setCurrentUser] = useState<MockAuthUser | null>(null);
+
+  React.useEffect(() => {
+    const user = authMockService.getCurrentUser();
+    if (user) {
+      setCurrentUser(user);
+    } else {
+      // Default to Admin session when accessing dashboard
+      setCurrentUser({
+        id: 'usr_admin_001',
+        name: 'Cool Admin',
+        email: 'cooladmin@gmail.com',
+        role: 'admin',
+        organizationId: 'org_cool_tech_001',
+        organizationName: 'Cool Technologies LLC',
+      });
+    }
+  }, []);
 
   const roles: UserRole[] = ['Super Admin', 'Admin', 'Operations Manager', 'Worker'];
 
@@ -157,18 +176,22 @@ export function EnterpriseTopHeader() {
           )}
         </div>
 
-        {/* User Profile & Role Switcher Dropdown */}
+        {/* User Profile & Logout Dropdown */}
         <div className="relative pl-2 border-l border-[#E2E8F0]">
           <button
             onClick={() => setShowRoleDropdown(!showRoleDropdown)}
-            className="flex items-center gap-2.5 p-1 rounded-md hover:bg-blue-50 transition-colors"
+            className="flex items-center gap-2.5 p-1 rounded-md hover:bg-blue-50 transition-colors cursor-pointer"
           >
-            <div className="w-7 h-7 rounded-full bg-[#2563EB] text-white flex items-center justify-center font-bold text-xs">
-              SA
+            <div className="w-7 h-7 rounded-full bg-[#1677FF] text-white flex items-center justify-center font-bold text-xs shadow-2xs">
+              {currentUser?.name ? currentUser.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase() : 'AD'}
             </div>
             <div className="hidden sm:flex flex-col text-left">
-              <span className="text-xs font-bold text-slate-900 leading-tight">Super Admin</span>
-              <span className="text-[10px] text-[#2563EB] font-semibold leading-tight">{currentRole}</span>
+              <span className="text-xs font-bold text-slate-900 leading-tight">
+                {currentUser?.name || 'Cool Admin'}
+              </span>
+              <span className="text-[10px] text-[#1677FF] font-bold leading-tight capitalize">
+                {currentUser?.role || 'Admin'}
+              </span>
             </div>
             <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
           </button>
@@ -178,48 +201,36 @@ export function EnterpriseTopHeader() {
               <div className="fixed inset-0 z-40" onClick={() => setShowRoleDropdown(false)} />
               <div className="absolute right-0 mt-1.5 w-60 bg-white border border-[#E2E8F0] rounded-md shadow-xl z-50 p-2 space-y-1 animate-in fade-in duration-150">
                 <div className="px-3 py-2 border-b border-slate-100">
-                  <p className="text-xs font-bold text-slate-900">Signed in as Super Admin</p>
-                  <p className="text-[11px] text-slate-500">admin@cooltechnologies.com</p>
+                  <p className="text-xs font-bold text-slate-900">{currentUser?.name || 'Cool Admin'}</p>
+                  <p className="text-[11px] text-slate-500 truncate">{currentUser?.email || 'cooladmin@gmail.com'}</p>
+                  <span className="inline-block mt-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-blue-50 text-blue-700 border border-blue-200 uppercase">
+                    {currentUser?.role || 'Admin'}
+                  </span>
                 </div>
 
-                <div className="pt-1">
-                  <p className="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">
-                    Simulate RBAC Role:
-                  </p>
-                  {roles.map((r) => (
-                    <button
-                      key={r}
-                      onClick={() => {
-                        setCurrentRole(r);
-                        setShowRoleDropdown(false);
-                      }}
-                      className={`w-full text-left px-3 py-1.5 rounded-md text-xs font-medium flex items-center justify-between transition-colors ${currentRole === r
-                          ? 'bg-[#EFF6FF] text-[#2563EB] font-bold'
-                          : 'text-slate-700 hover:bg-slate-50'
-                        }`}
-                    >
-                      <span>{r}</span>
-                      {currentRole === r && <span className="w-1.5 h-1.5 rounded-full bg-[#2563EB]" />}
-                    </button>
-                  ))}
-                </div>
-
-                <div className="border-t border-slate-100 pt-1 mt-1 space-y-0.5">
+                <div className="pt-1 space-y-0.5">
                   <Link
                     href="/settings"
                     onClick={() => setShowRoleDropdown(false)}
-                    className="block px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50 rounded-md transition-colors"
+                    className="block px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50 rounded-md transition-colors font-medium"
                   >
-                    System Settings
+                    Organization Settings
                   </Link>
-                  <Link
-                    href="/login"
-                    onClick={() => setShowRoleDropdown(false)}
-                    className="flex items-center justify-between px-3 py-1.5 text-xs text-rose-600 hover:bg-rose-50 rounded-md transition-colors font-semibold"
+                </div>
+
+                <div className="border-t border-slate-100 pt-1 mt-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowRoleDropdown(false);
+                      authMockService.logout();
+                      window.location.href = '/login';
+                    }}
+                    className="w-full flex items-center justify-between px-3 py-1.5 text-xs text-rose-600 hover:bg-rose-50 rounded-md transition-colors font-semibold cursor-pointer"
                   >
-                    <span>Admin Login / Sign Out</span>
+                    <span>Sign Out</span>
                     <LogOut className="w-3.5 h-3.5 text-rose-500" />
-                  </Link>
+                  </button>
                 </div>
               </div>
             </>

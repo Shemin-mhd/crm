@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Mail,
@@ -10,10 +10,8 @@ import {
   ArrowRight,
   Users,
   Target,
-  BarChart3,
-  Settings,
-  CheckCircle2,
   AlertCircle,
+  CheckCircle2,
   ShieldCheck,
   Sparkles,
   TrendingUp,
@@ -22,68 +20,71 @@ import {
   Briefcase,
   Zap,
 } from 'lucide-react';
+import { authMockService } from '@/services/authMockService';
 
 export default function LoginPage() {
   const router = useRouter();
 
-  // Admin Credentials
-  const [email, setEmail] = useState('cooladmin@gmail.com');
-  const [password, setPassword] = useState('cool@123');
+  // Form State - Starts completely empty
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(true);
+  const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [showForgotModal, setShowForgotModal] = useState(false);
   const [activePreviewTab, setActivePreviewTab] = useState<'overview' | 'sales' | 'pipeline'>('overview');
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage('');
     setSuccessMessage('');
 
-    if (!email.trim() || !password.trim()) {
-      setErrorMessage('Please enter both email and password.');
+    // Input Validation
+    const trimmedEmail = email.trim();
+    const trimmedPassword = password.trim();
+
+    if (!trimmedEmail || !trimmedPassword) {
+      setErrorMessage('Please enter both your email address and password.');
       return;
     }
 
-    if (
-      email.trim().toLowerCase() === 'cooladmin@gmail.com' &&
-      password.trim() === 'cool@123'
-    ) {
-      setIsLoading(true);
-      setSuccessMessage('Authentication successful! Opening Admin CRM Dashboard...');
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(trimmedEmail)) {
+      setErrorMessage('Please enter a valid email format (e.g. name@company.com).');
+      return;
+    }
 
-      try {
-        if (typeof window !== 'undefined') {
-          localStorage.setItem(
-            'cool_crm_auth',
-            JSON.stringify({
-              authenticated: true,
-              email: 'cooladmin@gmail.com',
-              role: 'Super Admin',
-              name: 'Cool Admin',
-              timestamp: Date.now(),
-            })
-          );
-        }
-      } catch (err) {
-        console.error('Storage error', err);
+    setIsLoading(true);
+
+    try {
+      const result = await authMockService.login(trimmedEmail, trimmedPassword, rememberMe);
+
+      if (result.success && result.redirectUrl) {
+        setSuccessMessage(`Authenticated as ${result.user?.name}! Opening ${result.user?.role.toUpperCase()} Portal...`);
+        setTimeout(() => {
+          router.push(result.redirectUrl || '/admin/dashboard');
+        }, 400);
+      } else {
+        setErrorMessage(result.error || 'Invalid email or password. Please check your credentials.');
+        setIsLoading(false);
       }
-
-      setTimeout(() => {
-        router.push('/dashboard');
-      }, 600);
-    } else {
-      setErrorMessage(
-        'Invalid credentials. Please use cooladmin@gmail.com / cool@123'
-      );
+    } catch {
+      setErrorMessage('An unexpected error occurred during authentication. Please try again.');
+      setIsLoading(false);
     }
   };
 
   const fillAdminCredentials = () => {
-    setEmail('cooladmin@gmail.com');
-    setPassword('cool@123');
+    setEmail('admin@gmail.com');
+    setPassword('admin@123');
+    setErrorMessage('');
+  };
+
+  const fillSuperAdminCredentials = () => {
+    setEmail('superadmin@gmail.com');
+    setPassword('super@123');
     setErrorMessage('');
   };
 
@@ -133,7 +134,7 @@ export default function LoginPage() {
 
           <div className="hidden sm:flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/15 px-3 py-1.5 rounded-full text-[11px] text-sky-100">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="font-semibold">ERP System v4.8 Active</span>
+            <span className="font-semibold">Enterprise ERP v4.8</span>
           </div>
         </div>
 
@@ -143,11 +144,11 @@ export default function LoginPage() {
             Smart CRM for Smarter Business
           </h1>
           <p className="mt-1 text-xs text-sky-100/90 font-normal leading-relaxed">
-            Enterprise command center for Leads, Sales, HVAC Service Operations & Analytics.
+            Enterprise command center for Leads, Sales, Commercial HVAC Service Operations &amp; Analytics.
           </p>
         </div>
 
-        {/* 3. EXECUTIVE CRM DASHBOARD MODEL (WHITE ENTERPRISE THEME) */}
+        {/* 3. EXECUTIVE CRM DASHBOARD PREVIEW */}
         <div className="relative z-10 w-full bg-white rounded-2xl sm:rounded-3xl border border-white/80 p-3.5 sm:p-4 shadow-2xl shadow-blue-950/25 text-slate-800 font-sans my-auto">
           {/* Dashboard Model Header Bar */}
           <div className="flex items-center justify-between pb-3 border-b border-slate-100">
@@ -234,7 +235,7 @@ export default function LoginPage() {
                 <span className="text-[10px] uppercase font-bold tracking-wider text-slate-500">Revenue</span>
                 <DollarSign className="w-3.5 h-3.5 text-amber-600" />
               </div>
-              <p className="text-base sm:text-lg font-black text-slate-900 tracking-tight leading-tight">₹28.4L</p>
+              <p className="text-base sm:text-lg font-black text-slate-900 tracking-tight leading-tight">AED 2.84M</p>
               <div className="flex items-center gap-1 text-[10px] text-sky-600 font-bold mt-0.5">
                 <span>+20% vs Target</span>
               </div>
@@ -268,13 +269,13 @@ export default function LoginPage() {
               {/* Bar Chart */}
               <div className="h-16 flex items-end justify-between gap-1.5 pt-1 px-1">
                 {[
-                  { m: 'Jan', h: 40, v: '₹14L' },
-                  { m: 'Feb', h: 60, v: '₹18L' },
-                  { m: 'Mar', h: 50, v: '₹16L' },
-                  { m: 'Apr', h: 80, v: '₹24L' },
-                  { m: 'May', h: 65, v: '₹20L' },
-                  { m: 'Jun', h: 95, v: '₹28L' },
-                  { m: 'Jul', h: 85, v: '₹26L' },
+                  { m: 'Jan', h: 40, v: '140K' },
+                  { m: 'Feb', h: 60, v: '180K' },
+                  { m: 'Mar', h: 50, v: '160K' },
+                  { m: 'Apr', h: 80, v: '240K' },
+                  { m: 'May', h: 65, v: '200K' },
+                  { m: 'Jun', h: 95, v: '280K' },
+                  { m: 'Jul', h: 85, v: '260K' },
                 ].map((bar, i) => (
                   <div key={i} className="flex-1 flex flex-col items-center gap-1 group relative">
                     <div className="w-full bg-slate-200/80 rounded-t-sm h-16 flex items-end">
@@ -307,7 +308,7 @@ export default function LoginPage() {
                     <span className="font-bold text-slate-900 leading-tight">Lumina Health Systems</span>
                     <span className="text-[9px] text-slate-500">Commercial HVAC Cooling • Quote Approved</span>
                   </div>
-                  <span className="font-bold text-emerald-600">₹14.5L</span>
+                  <span className="font-bold text-emerald-600">AED 145K</span>
                 </div>
 
                 <div className="flex items-center justify-between bg-white border border-slate-200/70 px-2 py-1 rounded-lg text-[10px] shadow-2xs">
@@ -315,7 +316,7 @@ export default function LoginPage() {
                     <span className="font-bold text-slate-900 leading-tight">Apex Cooling Towers</span>
                     <span className="text-[9px] text-slate-500">Chiller Plant Maintenance • Order Won</span>
                   </div>
-                  <span className="font-bold text-sky-600">₹8.2L</span>
+                  <span className="font-bold text-sky-600">AED 82K</span>
                 </div>
 
                 <div className="flex items-center justify-between bg-white border border-slate-200/70 px-2 py-1 rounded-lg text-[10px] shadow-2xs">
@@ -323,25 +324,25 @@ export default function LoginPage() {
                     <span className="font-bold text-slate-900 leading-tight">Metro Infra Corp</span>
                     <span className="text-[9px] text-slate-500">Industrial VRF Units • In Proposal</span>
                   </div>
-                  <span className="font-bold text-amber-600">₹22.0L</span>
+                  <span className="font-bold text-amber-600">AED 220K</span>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* 4. BOTTOM ENTERPRISE SECURITY GUARANTEE */}
+        {/* 4. BOTTOM ENTERPRISE SECURITY */}
         <div className="relative z-10 flex items-center justify-between text-[10px] text-sky-200/80 pt-2 border-t border-white/10">
           <span className="flex items-center gap-1">
             <ShieldCheck className="w-3.5 h-3.5 text-sky-300" />
-            <span>256-Bit Encrypted RBAC Security</span>
+            <span>Role-Based Protected Workspace</span>
           </span>
-          <span>Cool Technologies ERP Cloud Suite</span>
+          <span>Cool Technologies CRM Suite</span>
         </div>
       </div>
 
       {/* ========================================================= */}
-      {/* RIGHT HALF: Exact Elevated Floating White Card            */}
+      {/* RIGHT HALF: Elevated Floating Sign-in Card                */}
       {/* ========================================================= */}
       <div className="relative w-full lg:w-[48%] xl:w-[50%] h-full max-h-screen bg-[#F4FAFE] flex flex-col justify-between items-center px-4 sm:px-8 xl:px-12 py-5 sm:py-7 overflow-hidden">
         {/* Subtle wavy background curves watermark */}
@@ -362,20 +363,8 @@ export default function LoginPage() {
           </svg>
         </div>
 
-        {/* Top auto-fill badge */}
-        <div className="w-full max-w-[420px] flex justify-end relative z-10">
-          <button
-            type="button"
-            onClick={fillAdminCredentials}
-            className="flex items-center gap-1.5 px-3 py-1 bg-white hover:bg-sky-50 text-sky-700 border border-sky-200 rounded-full text-xs font-semibold shadow-xs transition-colors cursor-pointer"
-            title="Auto-fill cooladmin@gmail.com / cool@123"
-          >
-            <Sparkles className="w-3.5 h-3.5 text-sky-600" />
-            <span>Fill Admin Credentials</span>
-          </button>
-        </div>
 
-        {/* FLOATING WHITE CARD */}
+        {/* FLOATING SIGN-IN CARD */}
         <div className="relative z-10 w-full max-w-[420px] bg-white rounded-2xl sm:rounded-3xl shadow-xl shadow-blue-900/5 border border-slate-100 p-6 sm:p-8 my-auto">
           {/* Card Header & Brand Emblem */}
           <div className="flex flex-col items-center text-center">
@@ -401,23 +390,24 @@ export default function LoginPage() {
 
             {/* Heading & Subtitle */}
             <h2 className="text-xl sm:text-2xl font-bold text-[#0F172A] tracking-tight mt-4">
-              Welcome Back
+              Sign In to CRM
             </h2>
             <p className="text-xs text-slate-500 mt-0.5">
-              Sign in to your CRM account
+              Enter your credentials to access your dashboard
             </p>
           </div>
 
-          {/* Error & Success Messages */}
+          {/* Error Message */}
           {errorMessage && (
-            <div className="mt-3 p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-start gap-2 animate-in fade-in duration-150">
+            <div className="mt-3.5 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-start gap-2.5 animate-in fade-in duration-150">
               <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0 mt-0.5" />
-              <div className="flex-1 font-medium">{errorMessage}</div>
+              <div className="flex-1 font-medium leading-relaxed">{errorMessage}</div>
             </div>
           )}
 
+          {/* Success Message */}
           {successMessage && (
-            <div className="mt-3 p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs flex items-center gap-2 animate-in fade-in duration-150">
+            <div className="mt-3.5 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs flex items-center gap-2.5 animate-in fade-in duration-150">
               <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
               <div className="flex-1 font-medium">{successMessage}</div>
             </div>
@@ -474,6 +464,7 @@ export default function LoginPage() {
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+                  tabIndex={-1}
                 >
                   {showPassword ? (
                     <EyeOff className="w-4 h-4" />
@@ -514,60 +505,23 @@ export default function LoginPage() {
               {isLoading ? (
                 <div className="flex items-center gap-2">
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  <span>Signing in...</span>
+                  <span>Authenticating...</span>
                 </div>
               ) : (
                 <>
                   <ArrowRight className="w-4 h-4" />
-                  <span>Sign In</span>
+                  <span>Sign In to CRM</span>
                 </>
               )}
             </button>
           </form>
-
-          {/* Divider */}
-          <div className="relative my-3.5">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-slate-200" />
-            </div>
-            <div className="relative flex justify-center text-[9px] uppercase font-bold tracking-wider text-slate-400 bg-white px-3">
-              OR CONTINUE WITH
-            </div>
-          </div>
-
-          {/* Continue with Google */}
-          <button
-            type="button"
-            onClick={fillAdminCredentials}
-            className="w-full py-2 px-4 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 flex items-center justify-center gap-2.5 transition-colors shadow-2xs hover:shadow-xs cursor-pointer"
-          >
-            <svg className="w-4 h-4" viewBox="0 0 24 24">
-              <path
-                fill="#4285F4"
-                d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"
-              />
-              <path
-                fill="#34A853"
-                d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.34 24 12 24z"
-              />
-              <path
-                fill="#FBBC05"
-                d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.99 0 12s.45 3.82 1.25 5.42l4.03-3.15z"
-              />
-              <path
-                fill="#EA4335"
-                d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.34 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"
-              />
-            </svg>
-            <span>Continue with Google</span>
-          </button>
         </div>
 
         {/* Footer */}
         <div className="relative z-10 w-full text-center text-[10px] sm:text-xs text-slate-400 pt-2">
-          <p>© 2026 Cool Technologies. All rights reserved.</p>
+          <p>© 2026 Cool Technologies LLC. All rights reserved.</p>
           <p className="text-[10px] text-slate-400/80 mt-0.5">
-            The Science of Cooling | CRM System
+            The Science of Cooling | Enterprise CRM Suite
           </p>
         </div>
       </div>
@@ -580,21 +534,44 @@ export default function LoginPage() {
               <ShieldCheck className="w-5 h-5" />
             </div>
             <div className="text-center">
-              <h3 className="text-base font-bold text-slate-900">Admin Account Recovery</h3>
+              <h3 className="text-base font-bold text-slate-900">Configured Login Credentials</h3>
               <p className="text-xs text-slate-500 mt-1">
-                Your pre-configured admin login credentials are:
+                Your pre-configured test accounts are:
               </p>
             </div>
-            <div className="bg-slate-50 p-3 rounded-xl text-xs space-y-1.5 border border-slate-200">
+            
+            {/* Admin Credentials */}
+            <div className="bg-sky-50/60 p-3 rounded-xl text-xs space-y-1.5 border border-sky-200/80">
+              <div className="flex items-center justify-between pb-1 border-b border-sky-100 font-bold text-sky-900">
+                <span>🏢 Admin Role</span>
+                <span className="text-[10px] text-sky-600 font-semibold">/admin/dashboard</span>
+              </div>
               <p className="flex justify-between">
                 <span className="text-slate-500">Email:</span>
-                <span className="font-bold text-slate-800">cooladmin@gmail.com</span>
+                <span className="font-bold text-slate-800">admin@gmail.com</span>
               </p>
               <p className="flex justify-between">
                 <span className="text-slate-500">Password:</span>
-                <span className="font-bold text-slate-800">cool@123</span>
+                <span className="font-bold text-slate-800">admin@123</span>
               </p>
             </div>
+
+            {/* Super Admin Credentials */}
+            <div className="bg-purple-50/60 p-3 rounded-xl text-xs space-y-1.5 border border-purple-200/80">
+              <div className="flex items-center justify-between pb-1 border-b border-purple-100 font-bold text-purple-900">
+                <span>👑 Super Admin Role</span>
+                <span className="text-[10px] text-purple-600 font-semibold">/dashboard</span>
+              </div>
+              <p className="flex justify-between">
+                <span className="text-slate-500">Email:</span>
+                <span className="font-bold text-slate-800">superadmin@gmail.com</span>
+              </p>
+              <p className="flex justify-between">
+                <span className="text-slate-500">Password:</span>
+                <span className="font-bold text-slate-800">super@123</span>
+              </p>
+            </div>
+
             <div className="flex gap-2 pt-2">
               <button
                 type="button"
@@ -604,14 +581,17 @@ export default function LoginPage() {
                 }}
                 className="flex-1 py-2 bg-[#1677FF] hover:bg-[#0958D9] text-white rounded-lg text-xs font-bold transition-colors cursor-pointer"
               >
-                Auto-Fill & Close
+                Use Admin
               </button>
               <button
                 type="button"
-                onClick={() => setShowForgotModal(false)}
-                className="px-4 py-2 border border-slate-300 text-slate-700 hover:bg-slate-50 rounded-lg text-xs font-medium transition-colors cursor-pointer"
+                onClick={() => {
+                  fillSuperAdminCredentials();
+                  setShowForgotModal(false);
+                }}
+                className="flex-1 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs font-bold transition-colors cursor-pointer"
               >
-                Close
+                Use Super Admin
               </button>
             </div>
           </div>
